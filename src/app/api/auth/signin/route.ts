@@ -22,6 +22,8 @@ export async function POST(request: Request) {
         id: true,
         email: true,
         password: true,
+        role: true,
+        name: true,
       },
     });
 
@@ -41,10 +43,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // Generate JWT token
+    // Generate JWT token with role
     const token = await signJWT({
       sub: user.id,
       email: user.email,
+      role: user.role,
     });
 
     // Set cookie
@@ -57,7 +60,15 @@ export async function POST(request: Request) {
       maxAge: 60 * 60 * 24, // 1 day
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        name: user.name,
+      },
+    });
   } catch (error) {
     console.error("Sign-in error:", error);
     return NextResponse.json(

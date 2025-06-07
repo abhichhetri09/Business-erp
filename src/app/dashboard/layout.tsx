@@ -1,19 +1,23 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Bars3Icon } from "@heroicons/react/24/outline";
 import { cn } from "@/lib/utils";
+import { useUser } from "@/contexts/user-context";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(true); // Default to open on desktop
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const { user, loading } = useUser();
+  const router = useRouter();
 
   useEffect(() => {
     const checkMobile = () => {
@@ -28,7 +32,21 @@ export default function DashboardLayout({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  if (!mounted) {
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/auth/signin");
+    }
+  }, [loading, user, router]);
+
+  if (!mounted || loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500" />
+      </div>
+    );
+  }
+
+  if (!user) {
     return null;
   }
 
@@ -37,7 +55,7 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       {/* Sidebar */}
       <Sidebar isOpen={sidebarOpen} onClose={toggleSidebar} />
 
@@ -45,7 +63,7 @@ export default function DashboardLayout({
       <div
         className={cn(
           "flex-1 flex flex-col min-w-0 overflow-hidden transition-all duration-200",
-          sidebarOpen && !isMobile && "ml-72" // Update margin to match new sidebar width
+          sidebarOpen && !isMobile && "ml-72" // Update margin to match sidebar width
         )}
       >
         {/* Mobile header */}
@@ -66,7 +84,7 @@ export default function DashboardLayout({
         </div>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-auto p-4">
           <div className="animate-fade-in">{children}</div>
         </main>
       </div>

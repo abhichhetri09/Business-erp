@@ -49,9 +49,23 @@ export function UserProvider({ children }: { children: ReactNode }) {
     try {
       console.log("Checking auth status...");
       const response = await fetch("/api/auth/me");
+      const contentType = response.headers.get("content-type");
+
+      // Ensure we're getting JSON response
+      if (!contentType || !contentType.includes("application/json")) {
+        console.error("Non-JSON response from auth endpoint:", contentType);
+        setState((prev) => ({
+          ...prev,
+          user: null,
+          loading: false,
+          initialized: true,
+        }));
+        return;
+      }
+
+      const data = await response.json();
 
       if (response.ok) {
-        const data = await response.json();
         console.log("Auth check successful, user:", data.user);
         setState((prev) => ({
           ...prev,
@@ -60,7 +74,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
           initialized: true,
         }));
       } else {
-        console.log("Auth check failed, clearing user state");
+        console.log("Auth check failed:", data.error);
         setState((prev) => ({
           ...prev,
           user: null,

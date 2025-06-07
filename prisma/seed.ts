@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import type { User, Project } from "@prisma/client";
 import { hash } from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -140,8 +141,8 @@ async function main() {
 
   // Create Sample Time Entries
   const timeEntries = await Promise.all(
-    employees.flatMap((employee) =>
-      projects.map((project) =>
+    employees.flatMap((employee: User) =>
+      projects.map((project: Project) =>
         prisma.timeEntry.create({
           data: {
             userId: employee.id,
@@ -159,8 +160,8 @@ async function main() {
 
   // Create Sample Expenses
   const expenses = await Promise.all(
-    employees.flatMap((employee) =>
-      projects.map((project) =>
+    employees.flatMap((employee: User) =>
+      projects.map((project: Project) =>
         prisma.expense.create({
           data: {
             userId: employee.id,

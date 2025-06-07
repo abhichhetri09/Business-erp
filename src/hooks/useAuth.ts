@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { UserRole } from "@/contexts/user-context";
 
 interface User {
   id: string;
   name: string;
   email: string;
+  role: UserRole;
 }
 
 interface AuthState {
@@ -87,7 +89,7 @@ export function useAuth() {
         throw new Error(data.error || "Failed to sign in");
       }
 
-      // Update auth state
+      // Update auth state with user data including role
       setState((prev) => ({ ...prev, user: data.user, loading: false }));
 
       // Let the middleware handle the redirection
@@ -152,7 +154,7 @@ export function useAuth() {
     try {
       await fetch("/api/auth/signout", { method: "POST" });
       setState((prev) => ({ ...prev, user: null, loading: false }));
-      // Let the middleware handle the redirection
+      router.push("/auth/signin");
     } catch (error) {
       console.error("Failed to sign out:", error);
     }

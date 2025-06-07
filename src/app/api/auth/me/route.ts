@@ -9,40 +9,54 @@ export async function GET() {
     const token = cookieStore.get("token");
 
     if (!token) {
+      console.log("No token found in cookies");
       return NextResponse.json(
         { error: "Unauthorized - No token provided" },
         { status: 401 }
       );
     }
 
-    const { payload } = await verifyJWT(token.value);
+    try {
+      const { payload } = await verifyJWT(token.value);
 
-    if (!payload.sub) {
+      if (!payload.sub) {
+        console.log("Invalid token payload - missing sub");
+        return NextResponse.json(
+          { error: "Invalid token payload" },
+          { status: 401 }
+        );
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { id: payload.sub },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+        },
+      });
+
+      if (!user) {
+        console.log("User not found in database:", payload.sub);
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
+      }
+
+      return NextResponse.json({ user });
+    } catch (jwtError) {
+      console.error("JWT verification failed:", jwtError);
       return NextResponse.json(
-        { error: "Invalid token payload" },
+        { error: "Invalid or expired token" },
         { status: 401 }
       );
     }
-
-    const user = await prisma.user.findUnique({
-      where: { id: payload.sub },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-      },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    return NextResponse.json({ user });
   } catch (error) {
     console.error("Error in /api/auth/me:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   }

@@ -235,7 +235,42 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const pathname = usePathname();
   const router = useRouter();
-  const { hasPermission } = useUser();
+  const { hasPermission, user, loading } = useUser();
+
+  if (loading) {
+    return (
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-[70] w-72 transform bg-white border-r border-gray-200 transition-all duration-200 ease-in-out dark:bg-gray-900 dark:border-gray-800",
+          {
+            "translate-x-0": isOpen,
+            "-translate-x-full": !isOpen,
+          }
+        )}
+      >
+        <div className="flex h-full flex-col">
+          <div className="flex h-16 items-center justify-between px-4 border-b border-gray-200 dark:border-gray-800">
+            <div className="flex items-center gap-2">
+              <Icons.briefcase className="h-6 w-6 text-primary-500 animate-pulse" />
+              <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+            </div>
+          </div>
+          <div className="flex-1 p-4 space-y-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="h-10 bg-gray-100 dark:bg-gray-800 rounded animate-pulse"
+              />
+            ))}
+          </div>
+        </div>
+      </aside>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   useEffect(() => {
     const checkMobile = () => {
@@ -278,7 +313,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const renderNavItems = (items: NavItem[]) => {
     return items.map((item) => {
-      if (!hasPermission(item.roles)) return null;
+      if (!item.roles.some((role) => hasPermission([role]))) return null;
 
       const Icon = item.icon ? Icons[item.icon] : null;
       const hasSubItems = Boolean(item.items?.length);
@@ -316,7 +351,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               {expandedSections.includes(item.label) && (
                 <div className="ml-4 mt-1 space-y-1">
                   {item.items?.map((subItem) => {
-                    if (!hasPermission(subItem.roles)) return null;
+                    if (!subItem.roles.some((role) => hasPermission([role])))
+                      return null;
 
                     const SubIcon = subItem.icon ? Icons[subItem.icon] : null;
                     return (
@@ -425,7 +461,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           </nav>
 
           {/* Sidebar footer */}
-          <div className="border-t border-gray-200 p-4 dark:border-gray-800">
+          <div className="border-t border-gray-200 dark:border-gray-800 p-4 space-y-2">
             <ThemeToggle />
             <button
               onClick={handleSignOut}
