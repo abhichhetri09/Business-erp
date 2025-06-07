@@ -12,6 +12,13 @@ import { showToast } from "@/lib/toast";
 
 export type UserRole = "ADMIN" | "MANAGER" | "EMPLOYEE";
 
+// Role hierarchy definition
+const ROLE_HIERARCHY: Record<UserRole, UserRole[]> = {
+  ADMIN: ["ADMIN", "MANAGER", "EMPLOYEE"],
+  MANAGER: ["MANAGER", "EMPLOYEE"],
+  EMPLOYEE: ["EMPLOYEE"],
+};
+
 export interface User {
   id: string;
   name: string;
@@ -100,7 +107,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const hasPermission = (requiredRoles: UserRole[]) => {
     if (!state.user) return false;
-    return requiredRoles.includes(state.user.role);
+
+    // Get the allowed roles for the current user's role
+    const allowedRoles = ROLE_HIERARCHY[state.user.role];
+
+    // Check if any of the required roles are in the allowed roles
+    return requiredRoles.some((role) => allowedRoles.includes(role));
   };
 
   const isAdmin = () => state.user?.role === "ADMIN";
