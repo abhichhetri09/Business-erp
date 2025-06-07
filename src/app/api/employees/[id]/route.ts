@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { withRole } from "@/middleware/role-middleware";
 import { hash } from "bcryptjs";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 export async function PUT(
   request: NextRequest,
@@ -92,9 +93,15 @@ export async function DELETE(
   try {
     const { id } = params;
 
-    // Check if employee exists
+    // Check if employee exists and get their relationships
     const existingEmployee = await prisma.user.findUnique({
       where: { id },
+      include: {
+        timeEntries: true,
+        expenses: true,
+        projects: true,
+        managedProjects: true,
+      },
     });
 
     if (!existingEmployee) {
@@ -104,14 +111,67 @@ export async function DELETE(
       );
     }
 
-    // Delete employee
-    await prisma.user.delete({
-      where: { id },
+    // Start a transaction to handle all deletions
+    await prisma.$transaction(async (tx) => {
+      // 1. Delete all time entries
+      if (existingEmployee.timeEntries.length > 0) {
+        await tx.timeEntry.deleteMany({
+          where: { userId: id },
+        });
+      }
+
+      // 2. Delete all expenses
+      if (existingEmployee.expenses.length > 0) {
+        await tx.expense.deleteMany({
+          where: { userId: id },
+        });
+      }
+
+      // 3. Remove user from all projects they're a member of
+      if (existingEmployee.projects.length > 0) {
+        await tx.user.update({
+          where: { id },
+          data: {
+            projects: {
+              disconnect: existingEmployee.projects.map((p) => ({ id: p.id })),
+            },
+          },
+        });
+      }
+
+      // 4. Handle managed projects
+      if (existingEmployee.managedProjects.length > 0) {
+        // Either delete the projects or reassign them to another manager
+        await tx.project.deleteMany({
+          where: { managerId: id },
+        });
+      }
+
+      // 5. Finally delete the user
+      await tx.user.delete({
+        where: { id },
+      });
     });
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting employee:", error);
+
+    if (error instanceof PrismaClientKnownRequestError) {
+      if (error.code === "P2025") {
+        return NextResponse.json(
+          { error: "Employee not found" },
+          { status: 404 }
+        );
+      }
+
+      // Handle other known Prisma errors
+      return NextResponse.json(
+        { error: `Database error: ${error.message}` },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
       { error: "Failed to delete employee" },
       { status: 500 }

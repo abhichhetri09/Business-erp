@@ -1,34 +1,95 @@
 # Business ERP System
 
-A comprehensive business resource planning system built with Next.js, TypeScript, and Prisma.
+A modern, full-stack Enterprise Resource Planning (ERP) system built with Next.js, Prisma, and TypeScript.
 
 ## Features
 
-- 📊 Dashboard with key metrics and analytics
-- 👥 Employee management
-- 📋 Project management
-- ⏱️ Time tracking
-- 💰 Expense management
-- 📈 Reports and analytics
+### 🔐 Authentication & Authorization
+
+- Role-based access control (ADMIN, MANAGER, EMPLOYEE)
+- Secure authentication with JWT tokens
+- Protected API routes and middleware
+- Automatic redirection for unauthenticated users
+
+### 👥 Employee Management
+
+- Complete CRUD operations for employees
+- Role assignment and management
+- Bulk actions (select multiple employees)
+- Search and filter functionality
+
+### 📊 Project Management
+
+- Project creation and assignment
+- Team member allocation
+- Project status tracking
+- Timeline management with start/end dates
+
+### ⏱️ Time Tracking
+
+- Time entry logging
+- Project-based time tracking
+- Detailed time reports
+- Historical time data
+
+### 💰 Expense Management
+
+- Expense tracking and reporting
+- Expense approval workflow
+- Project-based expense allocation
+- Status tracking (PENDING, APPROVED, REJECTED)
+
+### 📊 Database Inspector
+
+- Interactive table viewer
+- Real-time data filtering
+- Column sorting
+- JSON data exploration
+- Row selection and bulk actions
+- Copy functionality
+- Responsive design
+
+### 🎨 Modern UI/UX
+
+- Clean, modern interface
+- Dark mode support
+- Responsive design
+- Interactive animations
+- Loading states and feedback
+- Error handling and notifications
 
 ## Tech Stack
 
-- **Frontend:**
+- **Frontend**:
 
-  - Next.js 14 with App Router
+  - Next.js 14 (App Router)
+  - React
   - TypeScript
   - Tailwind CSS
-  - Headless UI
-  - React Query
-  - React Hook Form
-  - Zod for validation
+  - Framer Motion
+  - Heroicons
 
-- **Backend:**
-  - Next.js API Routes
+- **Backend**:
+
+  - Node.js
   - Prisma ORM
-  - SQLite (can be easily switched to PostgreSQL)
+  - SQLite Database
+  - JWT Authentication
+
+- **Development**:
+  - ESLint
+  - Prettier
+  - TypeScript
+  - Git
 
 ## Getting Started
+
+### Prerequisites
+
+- Node.js 18+ installed
+- npm or yarn package manager
+
+### Installation
 
 1. Clone the repository:
 
@@ -41,50 +102,141 @@ A comprehensive business resource planning system built with Next.js, TypeScript
 
    ```bash
    npm install
+   # or
+   yarn install
    ```
 
-3. Set up the database:
+3. Set up environment variables:
 
    ```bash
-   npx prisma generate
-   npx prisma db push
+   cp .env.example .env
    ```
 
-4. Start the development server:
+4. Initialize the database:
+
+   ```bash
+   npx prisma migrate dev
+   npx prisma db seed
+   ```
+
+5. Start the development server:
 
    ```bash
    npm run dev
+   # or
+   yarn dev
    ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+### Default Users
+
+After seeding the database, you can log in with these default accounts:
+
+- **Admin**:
+
+  - Email: admin@company.com
+  - Password: admin123
+
+- **Manager**:
+
+  - Email: manager@company.com
+  - Password: manager123
+
+- **Employee**:
+  - Email: employee@company.com
+  - Password: employee123
 
 ## Project Structure
 
 ```
 business-erp/
 ├── src/
-│   ├── app/                 # Next.js app router pages
-│   ├── components/          # Reusable React components
-│   ├── lib/                 # Utility functions and configurations
-│   └── types/              # TypeScript type definitions
-├── prisma/                  # Database schema and migrations
-└── public/                 # Static assets
+│   ├── app/              # Next.js app router pages
+│   ├── components/       # React components
+│   ├── contexts/         # React contexts
+│   ├── hooks/           # Custom hooks
+│   ├── lib/             # Utility functions
+│   └── middleware.ts    # Auth middleware
+├── prisma/
+│   ├── schema.prisma    # Database schema
+│   └── seed.ts         # Seed data
+└── public/             # Static assets
 ```
 
-## Development
+## Role-Based Access
 
-- Run tests: `npm test`
-- Build for production: `npm run build`
-- Start production server: `npm start`
+### Admin
+
+- Full access to all features
+- Employee management
+- Role management
+- System settings
+- Database inspection
+
+### Manager
+
+- Project management
+- Team management
+- Expense approval
+- Report access
+- Limited employee management
+
+### Employee
+
+- Time tracking
+- Expense submission
+- Personal dashboard
+- Document access
+
+## API Routes
+
+### Authentication
+
+- POST /api/auth/signin
+- POST /api/auth/signup
+- GET /api/auth/signout
+
+### Employees
+
+- GET /api/employees
+- POST /api/employees
+- PUT /api/employees/[id]
+- DELETE /api/employees/[id]
+
+### Projects
+
+- GET /api/projects
+- POST /api/projects
+- PUT /api/projects/[id]
+- DELETE /api/projects/[id]
+
+### Time Entries
+
+- GET /api/time-entries
+- POST /api/time-entries
+- PUT /api/time-entries/[id]
+- DELETE /api/time-entries/[id]
+
+### Expenses
+
+- GET /api/expenses
+- POST /api/expenses
+- PUT /api/expenses/[id]
+- DELETE /api/expenses/[id]
 
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## License
 
-MIT License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Next.js team for the amazing framework
+- Prisma team for the excellent ORM
+- All contributors and users of this project

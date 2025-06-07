@@ -211,7 +211,7 @@ export default function DashboardPage() {
             className="animate-scale-in"
             style={{ animationDelay: `${index * 100}ms` }}
           >
-            <Card className="p-4 lg:p-6 transform transition-all duration-200 hover:scale-105 hover:shadow-lg">
+            <Card className="p-4 lg:p-6 h-[140px] flex flex-col justify-between">
               <div className="flex items-center">
                 <div
                   className="p-2 lg:p-3 rounded-full"
@@ -255,12 +255,12 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 lg:mb-8">
         <div
           className="animate-slide-in-right"
           style={{ animationDelay: "200ms" }}
         >
-          <Card className="p-4 lg:p-6 transform transition-all duration-200 hover:shadow-lg">
+          <Card className="p-4 lg:p-6 h-[400px] flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">Revenue Overview</h2>
               <Button
@@ -272,7 +272,7 @@ export default function DashboardPage() {
                 View Details
               </Button>
             </div>
-            <div className="h-[250px] lg:h-[300px]">
+            <div className="flex-1">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={data.revenueData}>
                   <defs>
@@ -294,24 +294,6 @@ export default function DashboardPage() {
                         stopOpacity={0}
                       />
                     </linearGradient>
-                    <linearGradient
-                      id="colorExpenses"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop
-                        offset="5%"
-                        stopColor={CHART_COLORS.accent.red}
-                        stopOpacity={0.1}
-                      />
-                      <stop
-                        offset="95%"
-                        stopColor={CHART_COLORS.accent.red}
-                        stopOpacity={0}
-                      />
-                    </linearGradient>
                   </defs>
                   <CartesianGrid
                     strokeDasharray="3 3"
@@ -322,10 +304,13 @@ export default function DashboardPage() {
                     dataKey="month"
                     stroke={CHART_COLORS.chart.text}
                     tick={{ fill: CHART_COLORS.chart.text }}
+                    padding={{ left: 0, right: 0 }}
                   />
                   <YAxis
                     stroke={CHART_COLORS.chart.text}
                     tick={{ fill: CHART_COLORS.chart.text }}
+                    tickCount={6}
+                    domain={[0, "auto"]}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Area
@@ -334,14 +319,6 @@ export default function DashboardPage() {
                     name="Revenue"
                     stroke={CHART_COLORS.accent.blue}
                     fill="url(#colorRevenue)"
-                    strokeWidth={2}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="expenses"
-                    name="Expenses"
-                    stroke={CHART_COLORS.accent.red}
-                    fill="url(#colorExpenses)"
                     strokeWidth={2}
                   />
                 </AreaChart>
@@ -354,7 +331,7 @@ export default function DashboardPage() {
           className="animate-slide-in-right"
           style={{ animationDelay: "400ms" }}
         >
-          <Card className="p-4 lg:p-6 transform transition-all duration-200 hover:shadow-lg">
+          <Card className="p-4 lg:p-6 h-[400px] flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">Employee Attendance</h2>
               <Button
@@ -366,7 +343,7 @@ export default function DashboardPage() {
                 View Details
               </Button>
             </div>
-            <div className="h-[250px] lg:h-[300px]">
+            <div className="flex-1">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data.employeeAttendance}>
                   <CartesianGrid
@@ -378,10 +355,13 @@ export default function DashboardPage() {
                     dataKey="day"
                     stroke={CHART_COLORS.chart.text}
                     tick={{ fill: CHART_COLORS.chart.text }}
+                    padding={{ left: 10, right: 10 }}
                   />
                   <YAxis
                     stroke={CHART_COLORS.chart.text}
                     tick={{ fill: CHART_COLORS.chart.text }}
+                    tickCount={6}
+                    domain={[0, "auto"]}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar
@@ -389,12 +369,14 @@ export default function DashboardPage() {
                     name="Present"
                     fill={CHART_COLORS.accent.green}
                     radius={[4, 4, 0, 0]}
+                    barSize={20}
                   />
                   <Bar
                     dataKey="absent"
                     name="Absent"
                     fill={CHART_COLORS.accent.red}
                     radius={[4, 4, 0, 0]}
+                    barSize={20}
                   />
                 </BarChart>
               </ResponsiveContainer>
@@ -407,7 +389,7 @@ export default function DashboardPage() {
         className="animate-slide-in-right"
         style={{ animationDelay: "600ms" }}
       >
-        <Card className="p-4 lg:p-6 transform transition-all duration-200 hover:shadow-lg">
+        <Card className="p-4 lg:p-6 h-[400px] flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Project Distribution</h2>
             <Button
@@ -419,29 +401,31 @@ export default function DashboardPage() {
               View All Projects
             </Button>
           </div>
-          <div className="h-[250px] lg:h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={data.projectDistribution}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {data.projectDistribution.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={PIE_COLORS[index % PIE_COLORS.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomTooltip />} />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 lg:gap-4">
+          <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="flex items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={data.projectDistribution}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    outerRadius={100}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {data.projectDistribution.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={PIE_COLORS[index % PIE_COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex flex-col justify-center space-y-4">
               {data.projectDistribution.map((entry, index) => (
                 <div
                   key={entry.name}
