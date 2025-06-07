@@ -53,7 +53,23 @@ export async function POST(request: Request) {
         name,
         email,
         password: hashedPassword,
-        role: "EMPLOYEE", // Added role field
+        role: "EMPLOYEE",
+        settings: {
+          create: {
+            theme: "system",
+            language: "en",
+            emailNotifications: true,
+            pushNotifications: true,
+            weeklyDigest: true,
+            workingHours: 8,
+            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            dateFormat: "MM/dd/yyyy",
+            timeFormat: "HH:mm",
+          },
+        },
+      },
+      include: {
+        settings: true,
       },
     });
     console.log("User created successfully:", {
@@ -67,6 +83,7 @@ export async function POST(request: Request) {
         id: user.id,
         name: user.name,
         email: user.email,
+        settings: user.settings,
       },
     });
   } catch (error) {

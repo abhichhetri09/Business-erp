@@ -11,6 +11,7 @@ async function main() {
   await prisma.expense.deleteMany();
   await prisma.timeEntry.deleteMany();
   await prisma.project.deleteMany();
+  await prisma.userSettings.deleteMany();
   await prisma.user.deleteMany();
 
   console.log("Cleared existing data");
@@ -94,6 +95,28 @@ async function main() {
   ]);
 
   console.log("Created employee users");
+
+  // Create default settings for all users
+  const allUsers = [admin1, admin2, manager1, manager2, ...employees];
+
+  for (const user of allUsers) {
+    await prisma.userSettings.create({
+      data: {
+        userId: user.id,
+        theme: "system",
+        language: "en",
+        emailNotifications: true,
+        pushNotifications: true,
+        weeklyDigest: true,
+        workingHours: 8,
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        dateFormat: "MM/dd/yyyy",
+        timeFormat: "HH:mm",
+      },
+    });
+  }
+
+  console.log("Created default settings for all users");
 
   // Create Sample Projects
   const projects = await Promise.all([
