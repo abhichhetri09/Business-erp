@@ -325,10 +325,13 @@ export default function EmployeesPage() {
             <Button
               variant="danger"
               onClick={handleDeleteEmployee}
-              isLoading={isSubmitting}
               disabled={isSubmitting}
             >
-              Delete
+              {isSubmitting ? (
+                <Icons.loading className="h-4 w-4 animate-spin" />
+              ) : (
+                "Delete"
+              )}
             </Button>
           </div>
         </div>
