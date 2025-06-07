@@ -16,7 +16,7 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const { user, loading } = useUser();
+  const { user, loading, initialized } = useUser();
   const router = useRouter();
 
   useEffect(() => {
@@ -33,12 +33,14 @@ export default function DashboardLayout({
   }, []);
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push("/auth/signin");
+    // Only redirect if we've completed the initial auth check
+    if (initialized && !loading && !user) {
+      router.replace("/auth/signin");
     }
-  }, [loading, user, router]);
+  }, [loading, user, router, initialized]);
 
-  if (!mounted || loading) {
+  // Show loading state while checking auth or before mounting
+  if (!mounted || loading || !initialized) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500" />
@@ -46,6 +48,7 @@ export default function DashboardLayout({
     );
   }
 
+  // Don't render anything if not authenticated
   if (!user) {
     return null;
   }

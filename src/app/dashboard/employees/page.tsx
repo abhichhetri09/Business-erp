@@ -9,6 +9,7 @@ import { showToast } from "@/lib/toast";
 import { Icons } from "@/components/icons";
 import { Modal } from "@/components/ui/modal";
 import { UserForm } from "@/components/users/user-form";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Employee {
   id: string;
@@ -30,7 +31,7 @@ interface UserFormData {
 }
 
 export default function EmployeesPage() {
-  const { user, isAdmin, isManager } = useUser();
+  const { user, hasPermission } = useUser();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -188,7 +189,7 @@ export default function EmployeesPage() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Employee Management</h1>
-        {isAdmin() && (
+        {hasPermission(["ADMIN"]) && (
           <Button
             onClick={() => {
               setSelectedEmployee(null);
@@ -222,7 +223,9 @@ export default function EmployeesPage() {
                   <th className="text-left p-2">Email</th>
                   <th className="text-left p-2">Role</th>
                   <th className="text-left p-2">Created At</th>
-                  {isAdmin() && <th className="text-left p-2">Actions</th>}
+                  {hasPermission(["ADMIN"]) && (
+                    <th className="text-left p-2">Actions</th>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -238,7 +241,7 @@ export default function EmployeesPage() {
                     <td className="p-2">
                       {new Date(employee.createdAt).toLocaleDateString()}
                     </td>
-                    {isAdmin() && (
+                    {hasPermission(["ADMIN"]) && (
                       <td className="p-2">
                         <Button
                           variant="ghost"

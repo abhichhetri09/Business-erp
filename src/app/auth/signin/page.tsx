@@ -39,8 +39,7 @@ export default function SignInPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (!loading && user) {
-      console.log("Already authenticated, redirecting to callback URL");
-      router.push(callbackUrl);
+      router.replace(callbackUrl);
     }
   }, [user, loading, router, callbackUrl]);
 
@@ -49,30 +48,23 @@ export default function SignInPage() {
     setIsLoading(true);
 
     try {
-      console.log("Submitting sign-in form...");
       const result = await signIn(formData.email, formData.password);
-      console.log("Sign-in result:", result);
 
       if (!result.success) {
         throw new Error(result.error);
       }
 
-      showToast("Signed in successfully! Redirecting...", {
+      showToast("Signed in successfully!", {
         type: "success",
       });
 
-      // Force navigation after a short delay
-      setTimeout(() => {
-        console.log("Forcing navigation to:", callbackUrl);
-        router.push(callbackUrl);
-        router.refresh();
-      }, 100);
+      // Force a hard navigation to ensure proper page load
+      window.location.href = callbackUrl;
     } catch (error) {
       console.error("Sign-in form error:", error);
       showToast(error instanceof Error ? error.message : "Failed to sign in", {
         type: "error",
       });
-    } finally {
       setIsLoading(false);
     }
   };
