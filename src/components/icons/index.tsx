@@ -32,6 +32,11 @@ import {
   SunIcon,
   MoonIcon,
   ArrowPathIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  MagnifyingGlassIcon,
+  ExclamationCircleIcon,
+  CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 
 // Main Navigation Icons
@@ -89,6 +94,14 @@ export const Icons = {
   briefcase: BriefcaseIcon,
   user: UserCircleIcon,
   loading: ArrowPathIcon,
+
+  // Form Elements
+  eye: EyeIcon,
+  eyeOff: EyeSlashIcon,
+  search: MagnifyingGlassIcon,
+  error: ExclamationCircleIcon,
+  success: CheckCircleIcon,
+
   // Theme
   sun: SunIcon,
   moon: MoonIcon,

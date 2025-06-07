@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectOption } from "@/components/ui/select";
 import { Icons } from "@/components/icons";
 import { cn } from "@/lib/utils";
 
@@ -25,10 +27,10 @@ interface UserFormProps {
   isLoading?: boolean;
 }
 
-const roleOptions = [
-  { value: "EMPLOYEE", label: "Employee", icon: Icons.users },
-  { value: "MANAGER", label: "Manager", icon: Icons.briefcase },
-  { value: "ADMIN", label: "Administrator", icon: Icons.settings },
+const roleOptions: SelectOption[] = [
+  { value: "EMPLOYEE", label: "Employee", icon: "users" },
+  { value: "MANAGER", label: "Manager", icon: "briefcase" },
+  { value: "ADMIN", label: "Administrator", icon: "settings" },
 ];
 
 export function UserForm({
@@ -117,60 +119,44 @@ export function UserForm({
   const renderField = (
     name: keyof UserFormData,
     label: string,
-    type: string = "text",
-    icon?: any
+    type: string = "text"
   ) => {
     const error = touched[name] ? errors[name] : "";
-    const Icon = icon || (name === "email" ? Icons.email : Icons.user);
+
+    if (type === "select") {
+      return (
+        <Select
+          id={name}
+          name={name}
+          value={formData[name]}
+          onChange={(e) => handleChange(name, e.target.value)}
+          options={roleOptions}
+          label={label}
+          required
+          error={error}
+          disabled={isSubmitting}
+          isLoading={isSubmitting}
+          className="transition-all duration-200"
+        />
+      );
+    }
 
     return (
-      <div className="space-y-1 animate-fade-in">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          {label}
-          <span className="text-red-500 ml-1">*</span>
-        </label>
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Icon className="h-5 w-5 text-gray-400" />
-          </div>
-          {type === "select" ? (
-            <select
-              value={formData[name]}
-              onChange={(e) => handleChange(name, e.target.value)}
-              className={cn(
-                "w-full pl-10 pr-3 py-2 rounded-lg border bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 transform hover:scale-[1.01]",
-                error
-                  ? "border-red-300 dark:border-red-700"
-                  : "border-gray-300 dark:border-gray-700"
-              )}
-            >
-              {roleOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <input
-              type={type}
-              value={formData[name]}
-              onChange={(e) => handleChange(name, e.target.value)}
-              className={cn(
-                "w-full pl-10 pr-3 py-2 rounded-lg border bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 transform hover:scale-[1.01]",
-                error
-                  ? "border-red-300 dark:border-red-700"
-                  : "border-gray-300 dark:border-gray-700"
-              )}
-              placeholder={`Enter ${label.toLowerCase()}`}
-            />
-          )}
-        </div>
-        {error && (
-          <p className="text-sm text-red-600 dark:text-red-400 mt-1 animate-slide-in-bottom">
-            {error}
-          </p>
-        )}
-      </div>
+      <Input
+        type={type}
+        id={name}
+        name={name}
+        value={formData[name]}
+        onChange={(e) => handleChange(name, e.target.value)}
+        label={label}
+        required
+        error={error}
+        icon={name === "email" ? "email" : "user"}
+        disabled={isSubmitting}
+        isLoading={isSubmitting}
+        placeholder={`Enter ${label.toLowerCase()}`}
+        className="transition-all duration-200"
+      />
     );
   };
 
@@ -201,7 +187,7 @@ export function UserForm({
         <form onSubmit={handleSubmit} className="space-y-4">
           {renderField("name", "Full Name")}
           {renderField("email", "Email Address", "email")}
-          {renderField("role", "Role", "select", Icons.briefcase)}
+          {renderField("role", "Role", "select")}
 
           <div className="flex justify-end space-x-3 mt-6 pt-4 border-t dark:border-gray-700">
             <Button
