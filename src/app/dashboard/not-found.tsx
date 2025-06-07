@@ -14,7 +14,7 @@ export default function NotFound() {
       <p className="mt-2 text-gray-500 dark:text-gray-500">
         The page you're looking for doesn't exist or has been moved.
       </p>
-      <Button variant="info" asChild className="mt-8">
+      <Button variant="outline" className="mt-8">
         <Link href="/dashboard">
           <HomeIcon className="h-5 w-5 mr-2" />
           Return to Dashboard

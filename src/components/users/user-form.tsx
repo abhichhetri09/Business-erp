@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { Icons } from "@/components/icons";
 import { cn } from "@/lib/utils";
 
 interface UserFormData {
@@ -26,9 +26,9 @@ interface UserFormProps {
 }
 
 const roleOptions = [
-  { value: "EMPLOYEE", label: "Employee" },
-  { value: "MANAGER", label: "Manager" },
-  { value: "ADMIN", label: "Administrator" },
+  { value: "EMPLOYEE", label: "Employee", icon: Icons.users },
+  { value: "MANAGER", label: "Manager", icon: Icons.briefcase },
+  { value: "ADMIN", label: "Administrator", icon: Icons.settings },
 ];
 
 export function UserForm({
@@ -47,6 +47,7 @@ export function UserForm({
   const [touched, setTouched] = useState<
     Partial<Record<keyof UserFormData, boolean>>
   >({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -86,6 +87,7 @@ export function UserForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
     // Validate all fields
     const newErrors: Partial<UserFormData> = {};
@@ -102,56 +104,71 @@ export function UserForm({
     });
 
     if (Object.keys(newErrors).length === 0) {
-      await onSubmit(formData);
+      try {
+        await onSubmit(formData);
+      } finally {
+        setIsSubmitting(false);
+      }
+    } else {
+      setIsSubmitting(false);
     }
   };
 
   const renderField = (
     name: keyof UserFormData,
     label: string,
-    type: string = "text"
+    type: string = "text",
+    icon?: any
   ) => {
     const error = touched[name] ? errors[name] : "";
+    const Icon = icon || (name === "email" ? Icons.email : Icons.user);
 
     return (
-      <div className="space-y-1">
+      <div className="space-y-1 animate-fade-in">
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           {label}
           <span className="text-red-500 ml-1">*</span>
         </label>
-        {type === "select" ? (
-          <select
-            value={formData[name]}
-            onChange={(e) => handleChange(name, e.target.value)}
-            className={cn(
-              "w-full px-3 py-2 rounded-lg border bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors",
-              error
-                ? "border-red-300 dark:border-red-700"
-                : "border-gray-300 dark:border-gray-700"
-            )}
-          >
-            {roleOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        ) : (
-          <input
-            type={type}
-            value={formData[name]}
-            onChange={(e) => handleChange(name, e.target.value)}
-            className={cn(
-              "w-full px-3 py-2 rounded-lg border bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors",
-              error
-                ? "border-red-300 dark:border-red-700"
-                : "border-gray-300 dark:border-gray-700"
-            )}
-            placeholder={`Enter ${label.toLowerCase()}`}
-          />
-        )}
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Icon className="h-5 w-5 text-gray-400" />
+          </div>
+          {type === "select" ? (
+            <select
+              value={formData[name]}
+              onChange={(e) => handleChange(name, e.target.value)}
+              className={cn(
+                "w-full pl-10 pr-3 py-2 rounded-lg border bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 transform hover:scale-[1.01]",
+                error
+                  ? "border-red-300 dark:border-red-700"
+                  : "border-gray-300 dark:border-gray-700"
+              )}
+            >
+              {roleOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type={type}
+              value={formData[name]}
+              onChange={(e) => handleChange(name, e.target.value)}
+              className={cn(
+                "w-full pl-10 pr-3 py-2 rounded-lg border bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 transform hover:scale-[1.01]",
+                error
+                  ? "border-red-300 dark:border-red-700"
+                  : "border-gray-300 dark:border-gray-700"
+              )}
+              placeholder={`Enter ${label.toLowerCase()}`}
+            />
+          )}
+        </div>
         {error && (
-          <p className="text-sm text-red-600 dark:text-red-400 mt-1">{error}</p>
+          <p className="text-sm text-red-600 dark:text-red-400 mt-1 animate-slide-in-bottom">
+            {error}
+          </p>
         )}
       </div>
     );
@@ -163,36 +180,47 @@ export function UserForm({
   );
 
   return (
-    <Card className="relative overflow-hidden">
+    <Card className="relative overflow-hidden animate-scale-in">
       <div className="absolute right-2 top-2">
         <Button
           variant="ghost"
           size="sm"
           onClick={onCancel}
-          className="text-gray-400 hover:text-gray-500"
+          className="text-gray-400 hover:text-gray-500 transition-colors duration-200 transform hover:scale-105"
         >
-          <XMarkIcon className="h-5 w-5" />
+          <Icons.close className="h-5 w-5" />
         </Button>
       </div>
       <div className="p-6">
-        <h2 className="text-xl font-semibold mb-6">
-          {user ? "Edit Employee" : "Add New Employee"}
-        </h2>
+        <div className="flex items-center gap-3 mb-6 animate-fade-in">
+          <Icons.userPlus className="h-6 w-6 text-primary-500" />
+          <h2 className="text-xl font-semibold">
+            {user ? "Edit Employee" : "Add New Employee"}
+          </h2>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           {renderField("name", "Full Name")}
           {renderField("email", "Email Address", "email")}
-          {renderField("role", "Role", "select")}
+          {renderField("role", "Role", "select", Icons.briefcase)}
 
           <div className="flex justify-end space-x-3 mt-6 pt-4 border-t dark:border-gray-700">
-            <Button variant="secondary" onClick={onCancel}>
+            <Button
+              variant="secondary"
+              onClick={onCancel}
+              className="transition-all duration-200 transform hover:scale-105 flex items-center gap-2"
+              disabled={isSubmitting}
+            >
+              <Icons.close className="h-4 w-4" />
               Cancel
             </Button>
             <Button
               type="submit"
               variant="primary"
-              isLoading={isLoading}
-              disabled={hasValidationErrors}
+              isLoading={isLoading || isSubmitting}
+              disabled={hasValidationErrors || isSubmitting}
+              className="transition-all duration-200 transform hover:scale-105 flex items-center gap-2"
             >
+              <Icons.userPlus className="h-4 w-4" />
               {user ? "Update Employee" : "Add Employee"}
             </Button>
           </div>

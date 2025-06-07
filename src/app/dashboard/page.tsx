@@ -1,34 +1,53 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  UsersIcon,
-  ClipboardDocumentListIcon,
-  ClockIcon,
-  CurrencyDollarIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
-} from "@heroicons/react/24/outline";
-import { Card } from "@/components/ui/card";
-import { LoadingPage, LoadingCard } from "@/components/ui/loading";
 import { Button } from "@/components/ui/button";
-import { showToast } from "@/lib/toast";
+import { Card } from "@/components/ui/card";
+import { Icons } from "@/components/icons";
 import {
   AreaChart,
   Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
   BarChart,
   Bar,
   PieChart,
   Pie,
   Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
 } from "recharts";
+import { showToast } from "@/lib/toast";
+import { LoadingPage } from "@/components/ui/loading";
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+// Modern color palette
+const CHART_COLORS = {
+  primary: {
+    main: "#334155", // slate-700
+    light: "#64748b", // slate-500
+    lighter: "#94a3b8", // slate-400
+    dark: "#1e293b", // slate-800
+  },
+  accent: {
+    blue: "#3b82f6", // blue-500
+    green: "#22c55e", // green-500
+    yellow: "#eab308", // yellow-500
+    red: "#ef4444", // red-500
+    purple: "#a855f7", // purple-500
+  },
+  chart: {
+    grid: "#e2e8f0", // slate-200
+    text: "#64748b", // slate-500
+  },
+};
+
+const PIE_COLORS = [
+  CHART_COLORS.accent.blue,
+  CHART_COLORS.accent.green,
+  CHART_COLORS.accent.yellow,
+  CHART_COLORS.accent.purple,
+];
 
 interface DashboardData {
   stats: {
@@ -41,6 +60,27 @@ interface DashboardData {
   projectDistribution: Array<{ name: string; value: number }>;
   employeeAttendance: Array<{ day: string; present: number; absent: number }>;
 }
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+          {label}
+        </p>
+        {payload.map((entry: any, index: number) => (
+          <p key={index} className="text-sm" style={{ color: entry.color }}>
+            {entry.name}:{" "}
+            {typeof entry.value === "number"
+              ? entry.value.toLocaleString()
+              : entry.value}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -98,205 +138,312 @@ export default function DashboardPage() {
 
   const stats = [
     {
-      name: "Total Employees",
-      value: data.stats.employees.total.toString(),
-      icon: UsersIcon,
-      change:
-        (data.stats.employees.change > 0 ? "+" : "") +
-        data.stats.employees.change,
-      changeType: data.stats.employees.changeType,
+      name: "Total Revenue",
+      value: "$45,231.89",
+      change: "+20.1%",
+      changeType: "increase",
+      icon: Icons.finance,
+      color: CHART_COLORS.accent.blue,
     },
     {
       name: "Active Projects",
-      value: data.stats.projects.total.toString(),
-      icon: ClipboardDocumentListIcon,
-      change:
-        (data.stats.projects.change > 0 ? "+" : "") +
-        data.stats.projects.change,
-      changeType: data.stats.projects.changeType,
+      value: "12",
+      change: "+2.5%",
+      changeType: "increase",
+      icon: Icons.projects,
+      color: CHART_COLORS.accent.green,
     },
     {
-      name: "Hours Tracked",
-      value: data.stats.hours.total.toFixed(1),
-      icon: ClockIcon,
-      change:
-        (data.stats.hours.change > 0 ? "+" : "") +
-        data.stats.hours.change.toFixed(1),
-      changeType: data.stats.hours.changeType,
+      name: "Team Members",
+      value: "24",
+      change: "-0.5%",
+      changeType: "decrease",
+      icon: Icons.users,
+      color: CHART_COLORS.accent.yellow,
     },
     {
-      name: "Monthly Expenses",
-      value: `$${data.stats.expenses.total.toLocaleString()}`,
-      icon: CurrencyDollarIcon,
-      change:
-        (data.stats.expenses.change > 0 ? "+" : "") +
-        (
-          (data.stats.expenses.change / data.stats.expenses.total) *
-          100
-        ).toFixed(1) +
-        "%",
-      changeType: data.stats.expenses.changeType,
+      name: "Pending Tasks",
+      value: "47",
+      change: "+4.2%",
+      changeType: "increase",
+      icon: Icons.tasks,
+      color: CHART_COLORS.accent.purple,
     },
   ];
 
   return (
-    <main className="p-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Dashboard Overview</h1>
+    <main className="p-4 lg:p-8">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 lg:mb-8 animate-fade-in">
+        <h1 className="text-2xl lg:text-3xl font-bold">Dashboard Overview</h1>
         <Button
           variant="secondary"
           size="sm"
           onClick={() => window.location.reload()}
-          leftIcon={
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-              />
-            </svg>
-          }
+          className="flex items-center gap-2"
         >
+          <Icons.loading className="h-4 w-4 animate-spin-slow" />
           Refresh
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat) => (
-          <Card key={stat.name} className="p-6">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-primary-100 dark:bg-primary-900">
-                <stat.icon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
+        {stats.map((stat, index) => (
+          <div
+            key={stat.name}
+            className="animate-scale-in"
+            style={{ animationDelay: `${index * 100}ms` }}
+          >
+            <Card className="p-4 lg:p-6 transform transition-all duration-200 hover:scale-105 hover:shadow-lg">
+              <div className="flex items-center">
+                <div
+                  className="p-2 lg:p-3 rounded-full"
+                  style={{ backgroundColor: `${stat.color}15` }}
+                >
+                  <stat.icon
+                    className="h-5 w-5 lg:h-6 lg:w-6"
+                    style={{ color: stat.color }}
+                  />
+                </div>
+                <div className="ml-3 lg:ml-4">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    {stat.name}
+                  </p>
+                  <p className="text-xl lg:text-2xl font-semibold">
+                    {stat.value}
+                  </p>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  {stat.name}
-                </p>
-                <p className="text-2xl font-semibold">{stat.value}</p>
+              <div className="mt-3 lg:mt-4 flex items-center">
+                {stat.changeType === "increase" ? (
+                  <Icons.trendUp className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Icons.trendDown className="h-4 w-4 text-red-500" />
+                )}
+                <span
+                  className={`ml-2 text-sm ${
+                    stat.changeType === "increase"
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-red-600 dark:text-red-400"
+                  }`}
+                >
+                  {stat.change}
+                </span>
+                <span className="ml-1 text-sm text-gray-600 dark:text-gray-400">
+                  from last month
+                </span>
               </div>
-            </div>
-            <div className="mt-4 flex items-center">
-              {stat.changeType === "increase" ? (
-                <ArrowTrendingUpIcon className="h-4 w-4 text-green-500" />
-              ) : (
-                <ArrowTrendingDownIcon className="h-4 w-4 text-red-500" />
-              )}
-              <span
-                className={`ml-2 text-sm ${
-                  stat.changeType === "increase"
-                    ? "text-green-600 dark:text-green-400"
-                    : "text-red-600 dark:text-red-400"
-                }`}
-              >
-                {stat.change}
-              </span>
-              <span className="ml-1 text-sm text-gray-600 dark:text-gray-400">
-                from last month
-              </span>
-            </div>
-          </Card>
+            </Card>
+          </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Revenue Overview</h2>
-            <Button variant="link" size="sm">
-              View Details
-            </Button>
-          </div>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data.revenueData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Area
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke="#8884d8"
-                  fill="#8884d8"
-                  fillOpacity={0.3}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8">
+        <div
+          className="animate-slide-in-right"
+          style={{ animationDelay: "200ms" }}
+        >
+          <Card className="p-4 lg:p-6 transform transition-all duration-200 hover:shadow-lg">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Revenue Overview</h2>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <Icons.presentation className="h-4 w-4" />
+                View Details
+              </Button>
+            </div>
+            <div className="h-[250px] lg:h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={data.revenueData}>
+                  <defs>
+                    <linearGradient
+                      id="colorRevenue"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="5%"
+                        stopColor={CHART_COLORS.accent.blue}
+                        stopOpacity={0.1}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor={CHART_COLORS.accent.blue}
+                        stopOpacity={0}
+                      />
+                    </linearGradient>
+                    <linearGradient
+                      id="colorExpenses"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="5%"
+                        stopColor={CHART_COLORS.accent.red}
+                        stopOpacity={0.1}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor={CHART_COLORS.accent.red}
+                        stopOpacity={0}
+                      />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke={CHART_COLORS.chart.grid}
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="month"
+                    stroke={CHART_COLORS.chart.text}
+                    tick={{ fill: CHART_COLORS.chart.text }}
+                  />
+                  <YAxis
+                    stroke={CHART_COLORS.chart.text}
+                    tick={{ fill: CHART_COLORS.chart.text }}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Area
+                    type="monotone"
+                    dataKey="revenue"
+                    name="Revenue"
+                    stroke={CHART_COLORS.accent.blue}
+                    fill="url(#colorRevenue)"
+                    strokeWidth={2}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="expenses"
+                    name="Expenses"
+                    stroke={CHART_COLORS.accent.red}
+                    fill="url(#colorExpenses)"
+                    strokeWidth={2}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </div>
 
-        <Card className="p-6">
+        <div
+          className="animate-slide-in-right"
+          style={{ animationDelay: "400ms" }}
+        >
+          <Card className="p-4 lg:p-6 transform transition-all duration-200 hover:shadow-lg">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Employee Attendance</h2>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <Icons.users className="h-4 w-4" />
+                View Details
+              </Button>
+            </div>
+            <div className="h-[250px] lg:h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={data.employeeAttendance}>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke={CHART_COLORS.chart.grid}
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="day"
+                    stroke={CHART_COLORS.chart.text}
+                    tick={{ fill: CHART_COLORS.chart.text }}
+                  />
+                  <YAxis
+                    stroke={CHART_COLORS.chart.text}
+                    tick={{ fill: CHART_COLORS.chart.text }}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar
+                    dataKey="present"
+                    name="Present"
+                    fill={CHART_COLORS.accent.green}
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Bar
+                    dataKey="absent"
+                    name="Absent"
+                    fill={CHART_COLORS.accent.red}
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </div>
+      </div>
+
+      <div
+        className="animate-slide-in-right"
+        style={{ animationDelay: "600ms" }}
+      >
+        <Card className="p-4 lg:p-6 transform transition-all duration-200 hover:shadow-lg">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Employee Attendance</h2>
-            <Button variant="link" size="sm">
-              View Details
+            <h2 className="text-lg font-semibold">Project Distribution</h2>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <Icons.briefcase className="h-4 w-4" />
+              View All Projects
             </Button>
           </div>
-          <div className="h-[300px]">
+          <div className="h-[250px] lg:h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.employeeAttendance}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="day" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="present" fill="#4CAF50" />
-                <Bar dataKey="absent" fill="#f44336" />
-              </BarChart>
+              <PieChart>
+                <Pie
+                  data={data.projectDistribution}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {data.projectDistribution.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={PIE_COLORS[index % PIE_COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+              </PieChart>
             </ResponsiveContainer>
+            <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 lg:gap-4">
+              {data.projectDistribution.map((entry, index) => (
+                <div
+                  key={entry.name}
+                  className="flex items-center transform transition-all duration-200 hover:translate-x-1"
+                >
+                  <div
+                    className="w-3 h-3 rounded-full mr-2"
+                    style={{
+                      backgroundColor: PIE_COLORS[index % PIE_COLORS.length],
+                    }}
+                  />
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    {entry.name}: {entry.value}%
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </Card>
       </div>
-
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Project Distribution</h2>
-          <Button variant="info" size="sm">
-            View All Projects
-          </Button>
-        </div>
-        <div className="h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={data.projectDistribution}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {data.projectDistribution.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="mt-4 grid grid-cols-2 gap-4">
-            {data.projectDistribution.map((entry, index) => (
-              <div key={entry.name} className="flex items-center">
-                <div
-                  className="w-3 h-3 rounded-full mr-2"
-                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                />
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  {entry.name}: {entry.value}%
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </Card>
     </main>
   );
 }
