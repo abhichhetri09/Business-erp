@@ -3,45 +3,51 @@
 import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/layout";
 import { Button } from "@/components/ui/button";
-import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon } from "@heroicons/react/24/outline";
+import { cn } from "@/lib/utils";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true); // Default to open on desktop
+  const [isMobile, setIsMobile] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      setSidebarOpen(!mobile); // Open by default on desktop, closed on mobile
+    };
+
     setMounted(true);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   if (!mounted) {
     return null;
   }
 
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
   return (
     <div className="flex h-screen">
-      {/* Mobile sidebar backdrop */}
-      <div
-        className={`fixed inset-0 z-20 bg-gray-900/50 lg:hidden transition-opacity duration-300 ${
-          sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
-        onClick={() => setSidebarOpen(false)}
-      />
-
-      {/* Mobile sidebar */}
-      <div
-        className={`fixed inset-y-0 left-0 z-30 w-64 transform bg-white transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-auto lg:w-64 lg:flex-shrink-0 dark:bg-gray-900 ${
-          sidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
-        }`}
-      >
-        <Sidebar onClose={() => setSidebarOpen(false)} />
-      </div>
+      {/* Sidebar */}
+      <Sidebar isOpen={sidebarOpen} onClose={toggleSidebar} />
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div
+        className={cn(
+          "flex-1 flex flex-col min-w-0 overflow-hidden transition-all duration-200",
+          sidebarOpen && !isMobile && "ml-72" // Update margin to match new sidebar width
+        )}
+      >
         {/* Mobile header */}
         <div className="lg:hidden">
           <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 px-4 py-2">
@@ -49,7 +55,7 @@ export default function DashboardLayout({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setSidebarOpen(true)}
+                onClick={toggleSidebar}
                 className="hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
               >
                 <Bars3Icon className="h-6 w-6" />

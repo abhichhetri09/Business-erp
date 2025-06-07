@@ -96,7 +96,6 @@ export default function DashboardPage() {
         }
         const dashboardData = await response.json();
         setData(dashboardData);
-        showToast("Dashboard data loaded successfully", { type: "success" });
       } catch (err) {
         const message =
           err instanceof Error ? err.message : "An error occurred";
@@ -109,6 +108,25 @@ export default function DashboardPage() {
 
     fetchDashboardData();
   }, []);
+
+  const handleRefresh = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/dashboard");
+      if (!response.ok) {
+        throw new Error("Failed to fetch dashboard data");
+      }
+      const dashboardData = await response.json();
+      setData(dashboardData);
+      showToast("Dashboard refreshed successfully", { type: "success" });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "An error occurred";
+      setError(message);
+      showToast(message, { type: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return <LoadingPage />;
@@ -124,7 +142,7 @@ export default function DashboardPage() {
               variant="outline"
               size="sm"
               className="ml-4"
-              onClick={() => window.location.reload()}
+              onClick={handleRefresh}
             >
               Retry
             </Button>
@@ -178,7 +196,7 @@ export default function DashboardPage() {
         <Button
           variant="secondary"
           size="sm"
-          onClick={() => window.location.reload()}
+          onClick={handleRefresh}
           className="flex items-center gap-2"
         >
           <Icons.loading className="h-4 w-4 animate-spin-slow" />

@@ -2,6 +2,6 @@
 
 import { DbInspector } from "@/components/db-inspector/db-inspector";
 
-export default function DbPage() {
+export default function DatabasePage() {
   return <DbInspector />;
 }

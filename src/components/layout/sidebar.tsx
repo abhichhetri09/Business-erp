@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/components/icons";
 import { ThemeToggle } from "@/components/layout";
@@ -33,6 +33,11 @@ const navigation: NavItem[] = [
       {
         label: "Time Tracking",
         href: "/dashboard/time",
+        icon: "clock",
+      },
+      {
+        label: "Attendance",
+        href: "/dashboard/attendance",
         icon: "clock",
       },
       {
@@ -179,18 +184,27 @@ const navigation: NavItem[] = [
     href: "/dashboard/settings",
     icon: "settings",
   },
+  {
+    label: "Database",
+    href: "/dashboard/db",
+    icon: "database",
+  },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [isMobile, setIsMobile] = useState(false);
-  const [isOpen, setIsOpen] = useState(true);
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
-      setIsOpen(window.innerWidth >= 768);
     };
 
     checkMobile();
@@ -199,7 +213,6 @@ export default function Sidebar() {
   }, []);
 
   useEffect(() => {
-    // Auto-expand the section containing the current page
     const currentSection = navigation.find((item) =>
       item.items?.some((subItem) => subItem.href === pathname)
     );
@@ -208,108 +221,87 @@ export default function Sidebar() {
     }
   }, [pathname]);
 
-  const toggleSidebar = () => {
-    setIsOpen(!isOpen);
+  const handleNavigation = (href: string, hasSubItems: boolean) => {
+    if (!hasSubItems) {
+      router.push(href);
+      if (isMobile) {
+        onClose();
+      }
+    }
   };
 
-  const toggleSection = (href: string) => {
-    setExpandedSections((prev) =>
-      prev.includes(href) ? prev.filter((h) => h !== href) : [...prev, href]
-    );
-  };
-
-  const renderNavItems = (items: NavItem[], level = 0) => {
+  const renderNavItems = (items: NavItem[]) => {
     return items.map((item) => {
-      const isActive = pathname === item.href;
-      const hasSubItems = item.items && item.items.length > 0;
-      const isExpanded = expandedSections.includes(item.href);
-      const Icon = Icons[item.icon];
-      const isSubItemActive = item.items?.some(
-        (subItem) => subItem.href === pathname
-      );
+      const Icon = item.icon ? Icons[item.icon] : null;
+      const hasSubItems = Boolean(item.items?.length);
 
       return (
-        <div key={item.href} className="relative">
+        <div key={item.label}>
           {hasSubItems ? (
-            <button
-              onClick={() => toggleSection(item.href)}
-              className={cn(
-                "w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors duration-200",
-                isSubItemActive
-                  ? "text-primary-900 dark:text-primary-100 bg-primary-50 dark:bg-primary-900/20"
-                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800",
-                level > 0 && "ml-4"
-              )}
-            >
-              <div className="flex items-center gap-3">
-                <Icon
+            <div>
+              <button
+                onClick={() => {
+                  setExpandedSections((prev) =>
+                    prev.includes(item.label)
+                      ? prev.filter((i) => i !== item.label)
+                      : [...prev, item.label]
+                  );
+                }}
+                className={cn(
+                  "flex w-full items-center justify-between rounded-lg px-3 py-2 text-gray-500 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100",
+                  "whitespace-nowrap overflow-hidden",
+                  pathname === item.href &&
+                    "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100"
+                )}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  {Icon && <Icon className="h-4 w-4 flex-shrink-0" />}
+                  <span className="truncate">{item.label}</span>
+                </div>
+                <Icons.chevronDown
                   className={cn(
-                    "h-4 w-4 transition-colors duration-200",
-                    isSubItemActive
-                      ? "text-primary-500"
-                      : "text-gray-500 dark:text-gray-400"
+                    "h-4 w-4 transition-transform flex-shrink-0 ml-2",
+                    expandedSections.includes(item.label) && "rotate-180"
                   )}
                 />
-                <span>{item.label}</span>
-              </div>
-              <Icons.chevronDown
-                className={cn(
-                  "h-4 w-4 transition-transform duration-200",
-                  isExpanded ? "rotate-180" : "rotate-0"
-                )}
-              />
-            </button>
+              </button>
+              {expandedSections.includes(item.label) && (
+                <div className="ml-4 mt-1 space-y-1">
+                  {item.items?.map((subItem) => {
+                    const SubIcon = subItem.icon ? Icons[subItem.icon] : null;
+                    return (
+                      <button
+                        key={subItem.label}
+                        onClick={() => handleNavigation(subItem.href, false)}
+                        className={cn(
+                          "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100",
+                          "whitespace-nowrap overflow-hidden",
+                          pathname === subItem.href &&
+                            "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100"
+                        )}
+                      >
+                        {SubIcon && (
+                          <SubIcon className="h-4 w-4 flex-shrink-0" />
+                        )}
+                        <span className="truncate">{subItem.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           ) : (
-            <Link
-              href={item.href}
+            <button
+              onClick={() => handleNavigation(item.href, false)}
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors duration-200",
-                isActive
-                  ? "text-primary-900 dark:text-primary-100 bg-primary-50 dark:bg-primary-900/20"
-                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800",
-                level > 0 && "ml-4"
+                "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100",
+                pathname === item.href &&
+                  "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100"
               )}
             >
-              <Icon
-                className={cn(
-                  "h-4 w-4 transition-colors duration-200",
-                  isActive
-                    ? "text-primary-500"
-                    : "text-gray-500 dark:text-gray-400"
-                )}
-              />
+              {Icon && <Icon className="h-4 w-4" />}
               <span>{item.label}</span>
-            </Link>
-          )}
-          {hasSubItems && isExpanded && (
-            <div className="mt-1 space-y-1">
-              {item.items?.map((subItem) => {
-                const isSubActive = pathname === subItem.href;
-                const SubIcon = Icons[subItem.icon];
-                return (
-                  <Link
-                    key={subItem.href}
-                    href={subItem.href}
-                    className={cn(
-                      "flex items-center gap-3 pl-10 pr-3 py-2 text-sm rounded-lg transition-colors duration-200",
-                      isSubActive
-                        ? "text-primary-900 dark:text-primary-100 bg-primary-50 dark:bg-primary-900/20"
-                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                    )}
-                  >
-                    <SubIcon
-                      className={cn(
-                        "h-4 w-4 transition-colors duration-200",
-                        isSubActive
-                          ? "text-primary-500"
-                          : "text-gray-500 dark:text-gray-400"
-                      )}
-                    />
-                    <span>{subItem.label}</span>
-                  </Link>
-                );
-              })}
-            </div>
+            </button>
           )}
         </div>
       );
@@ -321,31 +313,56 @@ export default function Sidebar() {
       {/* Mobile overlay */}
       {isMobile && isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-gray-600/50 backdrop-blur-sm transition-opacity lg:hidden"
-          onClick={toggleSidebar}
+          className="fixed inset-0 z-[60] bg-gray-600/50 backdrop-blur-sm transition-opacity"
+          onClick={onClose}
+          aria-hidden="true"
         />
+      )}
+
+      {/* Toggle button for desktop */}
+      {!isMobile && (
+        <button
+          onClick={onClose}
+          aria-expanded={isOpen}
+          aria-label={isOpen ? "Collapse sidebar" : "Expand sidebar"}
+          className={cn(
+            "fixed left-0 top-4 z-50 rounded-r-lg bg-white p-2 shadow-md transition-all duration-200 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800",
+            isOpen ? "translate-x-72" : "translate-x-0"
+          )}
+        >
+          {isOpen ? (
+            <Icons.close className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+          ) : (
+            <Icons.menu className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+          )}
+        </button>
       )}
 
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 transform bg-white border-r border-gray-200 transition-transform duration-200 ease-in-out dark:bg-gray-900 dark:border-gray-800",
-          isOpen ? "translate-x-0" : "-translate-x-full"
+          "fixed inset-y-0 left-0 z-[70] w-72 transform bg-white border-r border-gray-200 transition-all duration-200 ease-in-out dark:bg-gray-900 dark:border-gray-800",
+          {
+            "translate-x-0": isOpen,
+            "-translate-x-full": !isOpen,
+            "shadow-lg": isOpen && isMobile,
+          }
         )}
       >
         <div className="flex h-full flex-col">
           {/* Sidebar header */}
           <div className="flex h-16 items-center justify-between px-4 border-b border-gray-200 dark:border-gray-800">
-            <Link href="/dashboard" className="flex items-center gap-2">
-              <Icons.briefcase className="h-6 w-6 text-primary-500" />
-              <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            <Link href="/dashboard" className="flex items-center gap-2 min-w-0">
+              <Icons.briefcase className="h-6 w-6 text-primary-500 flex-shrink-0" />
+              <span className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
                 Business ERP
               </span>
             </Link>
             {isMobile && (
               <button
-                onClick={toggleSidebar}
-                className="rounded-lg p-1 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                onClick={onClose}
+                className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 ml-2 flex-shrink-0"
+                aria-label="Close sidebar"
               >
                 <Icons.close className="h-5 w-5" />
               </button>
@@ -363,24 +380,6 @@ export default function Sidebar() {
           </div>
         </div>
       </aside>
-
-      {/* Toggle button */}
-      {!isMobile && (
-        <button
-          onClick={toggleSidebar}
-          className={cn(
-            "fixed left-0 top-4 z-50 rounded-r-lg bg-white p-2 shadow-md transition-all duration-200 ease-in-out dark:bg-gray-900",
-            isOpen ? "translate-x-64" : "translate-x-0",
-            "hover:bg-gray-100 dark:hover:bg-gray-800"
-          )}
-        >
-          {isOpen ? (
-            <Icons.close className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-          ) : (
-            <Icons.menu className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-          )}
-        </button>
-      )}
     </>
   );
 }
