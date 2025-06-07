@@ -34,12 +34,32 @@ export async function GET() {
           email: true,
           name: true,
           role: true,
+          settings: true,
         },
       });
 
       if (!user) {
         console.log("User not found in database:", payload.sub);
         return NextResponse.json({ error: "User not found" }, { status: 404 });
+      }
+
+      // If user doesn't have settings, create default settings
+      if (!user.settings) {
+        const settings = await prisma.userSettings.create({
+          data: {
+            userId: user.id,
+            theme: "system",
+            language: "en",
+            emailNotifications: true,
+            pushNotifications: true,
+            weeklyDigest: true,
+            workingHours: 8,
+            timeZone: "UTC",
+            dateFormat: "MM/dd/yyyy",
+            timeFormat: "HH:mm",
+          },
+        });
+        user.settings = settings;
       }
 
       return NextResponse.json({ user });

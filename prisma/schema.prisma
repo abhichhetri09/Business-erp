@@ -16,10 +16,31 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  projects    Project[]    @relation("ProjectMembers")
-  timeEntries TimeEntry[]
-  expenses    Expense[]
-  managedProjects Project[] @relation("ProjectManager")
+  projects        Project[]     @relation("ProjectMembers")
+  timeEntries    TimeEntry[]
+  expenses       Expense[]
+  managedProjects Project[]    @relation("ProjectManager")
+  settings       UserSettings?
+}
+
+model UserSettings {
+  id                    String   @id @default(cuid())
+  theme                 String   @default("system") // light, dark, system
+  language              String   @default("en")
+  emailNotifications    Boolean  @default(true)
+  pushNotifications     Boolean  @default(true)
+  weeklyDigest         Boolean  @default(true)
+  defaultProjectId     String?
+  workingHours         Int      @default(8)
+  timeZone             String   @default("UTC")
+  dateFormat           String   @default("MM/dd/yyyy")
+  timeFormat           String   @default("HH:mm")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  userId               String   @unique
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  defaultProject       Project? @relation(fields: [defaultProjectId], references: [id], onDelete: SetNull)
 }
 
 model Project {
@@ -37,6 +58,7 @@ model Project {
   members     User[]   @relation("ProjectMembers")
   timeEntries TimeEntry[]
   expenses    Expense[]
+  defaultFor  UserSettings[]
 }
 
 model TimeEntry {

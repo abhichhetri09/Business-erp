@@ -12,7 +12,13 @@ export async function GET(
     switch (tableName) {
       case "user":
         data = await prisma.user.findMany({
-          include: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            createdAt: true,
+            updatedAt: true,
             projects: {
               select: {
                 id: true,

@@ -3,9 +3,30 @@ CREATE TABLE "User" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "email" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
     "role" TEXT NOT NULL DEFAULT 'EMPLOYEE',
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "UserSettings" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "theme" TEXT NOT NULL DEFAULT 'system',
+    "language" TEXT NOT NULL DEFAULT 'en',
+    "emailNotifications" BOOLEAN NOT NULL DEFAULT true,
+    "pushNotifications" BOOLEAN NOT NULL DEFAULT true,
+    "weeklyDigest" BOOLEAN NOT NULL DEFAULT true,
+    "defaultProjectId" TEXT,
+    "workingHours" INTEGER NOT NULL DEFAULT 8,
+    "timeZone" TEXT NOT NULL DEFAULT 'UTC',
+    "dateFormat" TEXT NOT NULL DEFAULT 'MM/dd/yyyy',
+    "timeFormat" TEXT NOT NULL DEFAULT 'HH:mm',
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    "userId" TEXT NOT NULL,
+    CONSTRAINT "UserSettings_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "UserSettings_defaultProjectId_fkey" FOREIGN KEY ("defaultProjectId") REFERENCES "Project" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -61,6 +82,9 @@ CREATE TABLE "_ProjectMembers" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserSettings_userId_key" ON "UserSettings"("userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_ProjectMembers_AB_unique" ON "_ProjectMembers"("A", "B");

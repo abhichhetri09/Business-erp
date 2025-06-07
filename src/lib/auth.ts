@@ -1,23 +1,23 @@
 import { cookies } from "next/headers";
-import { jwtVerify } from "jose";
+import { verifyJWT } from "@/lib/jwt";
 import { prisma } from "@/lib/db";
-
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
 export async function getUser() {
   try {
-    const token = cookies().get("token")?.value;
-    if (!token) return null;
+    const cookieStore = cookies();
+    const token = cookieStore.get("token");
 
-    const { payload } = await jwtVerify(
-      token,
-      new TextEncoder().encode(JWT_SECRET)
-    );
+    if (!token) {
+      return null;
+    }
 
-    if (!payload.sub) return null;
+    const { payload } = await verifyJWT(token.value);
+    if (!payload.sub) {
+      return null;
+    }
 
     const user = await prisma.user.findUnique({
-      where: { id: payload.sub as string },
+      where: { id: payload.sub },
       select: {
         id: true,
         email: true,
@@ -31,4 +31,18 @@ export async function getUser() {
     console.error("Error getting user:", error);
     return null;
   }
+}
+
+export function hasPermission(userRole: string, requiredRoles: string[]) {
+  if (!userRole || !requiredRoles?.length) {
+    return false;
+  }
+
+  // Admin has access to everything
+  if (userRole === "ADMIN") {
+    return true;
+  }
+
+  // Check if user's role is in the required roles
+  return requiredRoles.includes(userRole);
 }
