@@ -6,11 +6,13 @@ import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/components/icons";
 import { ThemeToggle } from "@/components/layout";
+import { useUser, UserRole } from "@/contexts/user-context";
 
 interface NavItem {
   label: string;
   href: string;
   icon: keyof typeof Icons;
+  roles: UserRole[];
   items?: NavItem[];
 }
 
@@ -19,36 +21,43 @@ const navigation: NavItem[] = [
     label: "Dashboard",
     href: "/dashboard",
     icon: "home",
+    roles: ["ADMIN", "MANAGER", "EMPLOYEE"],
   },
   {
     label: "HR Management",
     href: "/dashboard/hr",
     icon: "users",
+    roles: ["ADMIN", "MANAGER", "EMPLOYEE"],
     items: [
       {
         label: "Employees",
         href: "/dashboard/employees",
         icon: "users",
+        roles: ["ADMIN", "MANAGER", "EMPLOYEE"],
       },
       {
         label: "Time Tracking",
         href: "/dashboard/time",
         icon: "clock",
+        roles: ["ADMIN", "MANAGER", "EMPLOYEE"],
       },
       {
         label: "Attendance",
         href: "/dashboard/attendance",
         icon: "clock",
+        roles: ["ADMIN", "MANAGER", "EMPLOYEE"],
       },
       {
         label: "Leave Management",
         href: "/dashboard/leave",
         icon: "calendar",
+        roles: ["ADMIN", "MANAGER", "EMPLOYEE"],
       },
       {
         label: "Payroll",
         href: "/dashboard/payroll",
         icon: "creditCard",
+        roles: ["ADMIN", "MANAGER"],
       },
     ],
   },
@@ -56,26 +65,31 @@ const navigation: NavItem[] = [
     label: "Project Management",
     href: "/dashboard/projects",
     icon: "projects",
+    roles: ["ADMIN", "MANAGER", "EMPLOYEE"],
     items: [
       {
         label: "Projects",
         href: "/dashboard/projects",
         icon: "projects",
+        roles: ["ADMIN", "MANAGER", "EMPLOYEE"],
       },
       {
         label: "Tasks",
         href: "/dashboard/tasks",
         icon: "tasks",
+        roles: ["ADMIN", "MANAGER", "EMPLOYEE"],
       },
       {
         label: "Timeline",
         href: "/dashboard/timeline",
         icon: "timeline",
+        roles: ["ADMIN", "MANAGER", "EMPLOYEE"],
       },
       {
         label: "Reports",
         href: "/dashboard/project-reports",
         icon: "reports",
+        roles: ["ADMIN", "MANAGER"],
       },
     ],
   },
@@ -83,26 +97,31 @@ const navigation: NavItem[] = [
     label: "Finance",
     href: "/dashboard/finance",
     icon: "finance",
+    roles: ["ADMIN", "MANAGER"],
     items: [
       {
         label: "Overview",
         href: "/dashboard/finance",
         icon: "finance",
+        roles: ["ADMIN", "MANAGER"],
       },
       {
         label: "Invoices",
         href: "/dashboard/invoices",
         icon: "invoice",
+        roles: ["ADMIN", "MANAGER"],
       },
       {
         label: "Expenses",
         href: "/dashboard/expenses",
         icon: "expenses",
+        roles: ["ADMIN", "MANAGER", "EMPLOYEE"],
       },
       {
         label: "Budget",
         href: "/dashboard/budget",
         icon: "budget",
+        roles: ["ADMIN", "MANAGER"],
       },
     ],
   },
@@ -110,21 +129,25 @@ const navigation: NavItem[] = [
     label: "Analytics",
     href: "/dashboard/analytics",
     icon: "analytics",
+    roles: ["ADMIN", "MANAGER"],
     items: [
       {
         label: "Overview",
         href: "/dashboard/analytics",
         icon: "analytics",
+        roles: ["ADMIN", "MANAGER"],
       },
       {
         label: "Reports",
         href: "/dashboard/reports",
         icon: "charts",
+        roles: ["ADMIN", "MANAGER"],
       },
       {
         label: "Presentations",
         href: "/dashboard/presentations",
         icon: "presentation",
+        roles: ["ADMIN", "MANAGER"],
       },
     ],
   },
@@ -132,16 +155,19 @@ const navigation: NavItem[] = [
     label: "Documents",
     href: "/dashboard/documents",
     icon: "documents",
+    roles: ["ADMIN", "MANAGER", "EMPLOYEE"],
     items: [
       {
         label: "All Documents",
         href: "/dashboard/documents",
         icon: "documents",
+        roles: ["ADMIN", "MANAGER", "EMPLOYEE"],
       },
       {
         label: "Contracts",
         href: "/dashboard/contracts",
         icon: "clipboard",
+        roles: ["ADMIN", "MANAGER"],
       },
     ],
   },
@@ -149,16 +175,19 @@ const navigation: NavItem[] = [
     label: "Communication",
     href: "/dashboard/communication",
     icon: "messages",
+    roles: ["ADMIN", "MANAGER", "EMPLOYEE"],
     items: [
       {
         label: "Messages",
         href: "/dashboard/messages",
         icon: "messages",
+        roles: ["ADMIN", "MANAGER", "EMPLOYEE"],
       },
       {
         label: "Email",
         href: "/dashboard/email",
         icon: "email",
+        roles: ["ADMIN", "MANAGER", "EMPLOYEE"],
       },
     ],
   },
@@ -166,16 +195,19 @@ const navigation: NavItem[] = [
     label: "Organization",
     href: "/dashboard/organization",
     icon: "company",
+    roles: ["ADMIN", "MANAGER"],
     items: [
       {
         label: "Company",
         href: "/dashboard/company",
         icon: "company",
+        roles: ["ADMIN", "MANAGER"],
       },
       {
         label: "Departments",
         href: "/dashboard/departments",
         icon: "department",
+        roles: ["ADMIN", "MANAGER"],
       },
     ],
   },
@@ -183,11 +215,13 @@ const navigation: NavItem[] = [
     label: "Settings",
     href: "/dashboard/settings",
     icon: "settings",
+    roles: ["ADMIN"],
   },
   {
     label: "Database",
     href: "/dashboard/db",
     icon: "database",
+    roles: ["ADMIN"],
   },
 ];
 
@@ -201,6 +235,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const pathname = usePathname();
   const router = useRouter();
+  const { hasPermission } = useUser();
 
   useEffect(() => {
     const checkMobile = () => {
@@ -230,8 +265,21 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     }
   };
 
+  const handleSignOut = async () => {
+    try {
+      const response = await fetch("/api/auth/signout", { method: "POST" });
+      if (response.ok) {
+        router.push("/auth/signin");
+      }
+    } catch (error) {
+      console.error("Failed to sign out:", error);
+    }
+  };
+
   const renderNavItems = (items: NavItem[]) => {
     return items.map((item) => {
+      if (!hasPermission(item.roles)) return null;
+
       const Icon = item.icon ? Icons[item.icon] : null;
       const hasSubItems = Boolean(item.items?.length);
 
@@ -268,6 +316,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               {expandedSections.includes(item.label) && (
                 <div className="ml-4 mt-1 space-y-1">
                   {item.items?.map((subItem) => {
+                    if (!hasPermission(subItem.roles)) return null;
+
                     const SubIcon = subItem.icon ? Icons[subItem.icon] : null;
                     return (
                       <button
@@ -377,6 +427,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           {/* Sidebar footer */}
           <div className="border-t border-gray-200 p-4 dark:border-gray-800">
             <ThemeToggle />
+            <button
+              onClick={handleSignOut}
+              className="flex items-center w-full px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors duration-200"
+            >
+              <Icons.close className="h-5 w-5 mr-2" />
+              Sign Out
+            </button>
           </div>
         </div>
       </aside>

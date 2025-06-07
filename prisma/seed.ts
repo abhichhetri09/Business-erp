@@ -1,104 +1,192 @@
-import { PrismaClient } from "../src/generated/prisma";
+import { PrismaClient } from "@prisma/client";
+import { hash } from "bcryptjs";
 
 const prisma = new PrismaClient();
 
 async function main() {
-  // Create users
-  const john = await prisma.user.upsert({
-    where: { email: "john@example.com" },
-    update: {},
-    create: {
-      email: "john@example.com",
-      name: "John Doe",
+  console.log("Starting seeding...");
+
+  // Clear existing data
+  await prisma.expense.deleteMany();
+  await prisma.timeEntry.deleteMany();
+  await prisma.project.deleteMany();
+  await prisma.user.deleteMany();
+
+  console.log("Cleared existing data");
+
+  // Create Admin Users
+  const admin1 = await prisma.user.create({
+    data: {
+      name: "John Admin",
+      email: "admin@company.com",
+      password: await hash("admin123", 12),
+      role: "ADMIN",
+    },
+  });
+
+  const admin2 = await prisma.user.create({
+    data: {
+      name: "Sarah Admin",
+      email: "sarah.admin@company.com",
+      password: await hash("admin123", 12),
+      role: "ADMIN",
+    },
+  });
+
+  console.log("Created admin users");
+
+  // Create Manager Users
+  const manager1 = await prisma.user.create({
+    data: {
+      name: "Mike Manager",
+      email: "manager@company.com",
+      password: await hash("manager123", 12),
       role: "MANAGER",
     },
   });
 
-  const jane = await prisma.user.upsert({
-    where: { email: "jane@example.com" },
-    update: {},
-    create: {
-      email: "jane@example.com",
-      name: "Jane Smith",
-      role: "EMPLOYEE",
-    },
-  });
-
-  // Create projects
-  const project1 = await prisma.project.create({
+  const manager2 = await prisma.user.create({
     data: {
-      name: "Website Redesign",
-      description: "Redesign company website",
-      status: "ACTIVE",
-      startDate: new Date(),
-      managerId: john.id,
-      members: {
-        connect: [{ id: jane.id }],
-      },
+      name: "Lisa Manager",
+      email: "lisa.manager@company.com",
+      password: await hash("manager123", 12),
+      role: "MANAGER",
     },
   });
 
-  const project2 = await prisma.project.create({
-    data: {
-      name: "Mobile App",
-      description: "Develop mobile application",
-      status: "PLANNING",
-      startDate: new Date(),
-      managerId: john.id,
-      members: {
-        connect: [{ id: jane.id }],
-      },
-    },
-  });
+  console.log("Created manager users");
 
-  // Create time entries
-  await prisma.timeEntry.createMany({
-    data: [
-      {
-        userId: jane.id,
-        projectId: project1.id,
-        date: new Date(),
-        hours: 8,
-        description: "Working on homepage",
+  // Create Employee Users
+  const employees = await Promise.all([
+    prisma.user.create({
+      data: {
+        name: "Tom Employee",
+        email: "employee@company.com",
+        password: await hash("employee123", 12),
+        role: "EMPLOYEE",
       },
-      {
-        userId: jane.id,
-        projectId: project2.id,
-        date: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
-        hours: 6,
-        description: "App planning",
+    }),
+    prisma.user.create({
+      data: {
+        name: "Jane Employee",
+        email: "jane.employee@company.com",
+        password: await hash("employee123", 12),
+        role: "EMPLOYEE",
       },
-    ],
-  });
+    }),
+    prisma.user.create({
+      data: {
+        name: "Bob Developer",
+        email: "bob.dev@company.com",
+        password: await hash("employee123", 12),
+        role: "EMPLOYEE",
+      },
+    }),
+    prisma.user.create({
+      data: {
+        name: "Alice Designer",
+        email: "alice.design@company.com",
+        password: await hash("employee123", 12),
+        role: "EMPLOYEE",
+      },
+    }),
+  ]);
 
-  // Create expenses
-  await prisma.expense.createMany({
-    data: [
-      {
-        userId: jane.id,
-        projectId: project1.id,
-        amount: 150.0,
-        description: "Design software license",
-        date: new Date(),
-        status: "APPROVED",
-      },
-      {
-        userId: john.id,
-        projectId: project2.id,
-        amount: 300.0,
-        description: "Development tools",
-        date: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
-        status: "PENDING",
-      },
-    ],
-  });
+  console.log("Created employee users");
 
-  console.log("Seed data created successfully");
+  // Create Sample Projects
+  const projects = await Promise.all([
+    prisma.project.create({
+      data: {
+        name: "Website Redesign",
+        description: "Company website redesign project",
+        status: "ACTIVE",
+        startDate: new Date(),
+        endDate: new Date(new Date().setMonth(new Date().getMonth() + 3)),
+        managerId: manager1.id,
+        members: {
+          connect: [{ id: employees[0].id }, { id: employees[1].id }],
+        },
+      },
+    }),
+    prisma.project.create({
+      data: {
+        name: "Mobile App Development",
+        description: "New mobile app for customers",
+        status: "ACTIVE",
+        startDate: new Date(),
+        endDate: new Date(new Date().setMonth(new Date().getMonth() + 6)),
+        managerId: manager2.id,
+        members: {
+          connect: [{ id: employees[2].id }, { id: employees[3].id }],
+        },
+      },
+    }),
+    prisma.project.create({
+      data: {
+        name: "Internal Tools",
+        description: "Development of internal tools",
+        status: "PLANNING",
+        startDate: new Date(new Date().setDate(new Date().getDate() + 14)),
+        managerId: manager1.id,
+        members: {
+          connect: [{ id: employees[0].id }, { id: employees[2].id }],
+        },
+      },
+    }),
+  ]);
+
+  console.log("Created sample projects");
+
+  // Create Sample Time Entries
+  const timeEntries = await Promise.all(
+    employees.flatMap((employee) =>
+      projects.map((project) =>
+        prisma.timeEntry.create({
+          data: {
+            userId: employee.id,
+            projectId: project.id,
+            date: new Date(),
+            hours: Math.floor(Math.random() * 8) + 1,
+            description: "Work on project tasks",
+          },
+        })
+      )
+    )
+  );
+
+  console.log("Created sample time entries");
+
+  // Create Sample Expenses
+  const expenses = await Promise.all(
+    employees.flatMap((employee) =>
+      projects.map((project) =>
+        prisma.expense.create({
+          data: {
+            userId: employee.id,
+            projectId: project.id,
+            amount: Math.floor(Math.random() * 1000) + 100,
+            description: "Project related expense",
+            date: new Date(),
+            status: "PENDING",
+          },
+        })
+      )
+    )
+  );
+
+  console.log("Created sample expenses");
+
+  console.log("Seeding completed successfully!");
+  console.log("\nYou can now log in with these accounts:");
+  console.log("Admin: admin@company.com / admin123");
+  console.log("Manager: manager@company.com / manager123");
+  console.log("Employee: employee@company.com / employee123");
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error("Error during seeding:", e);
     process.exit(1);
   })
   .finally(async () => {

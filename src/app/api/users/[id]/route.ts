@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 export async function GET(
   request: Request,
@@ -22,6 +23,7 @@ export async function GET(
 
     return NextResponse.json(user);
   } catch (error) {
+    console.error("Error fetching user:", error);
     return NextResponse.json(
       { error: "Failed to fetch user" },
       { status: 500 }
@@ -79,11 +81,13 @@ export async function PATCH(
     console.error("Error updating user:", error);
 
     // Handle Prisma errors
-    if (error.code === "P2002") {
-      return NextResponse.json(
-        { error: "Email already exists" },
-        { status: 400 }
-      );
+    if (error instanceof PrismaClientKnownRequestError) {
+      if (error.code === "P2002") {
+        return NextResponse.json(
+          { error: "Email already exists" },
+          { status: 400 }
+        );
+      }
     }
 
     return NextResponse.json(
@@ -103,6 +107,14 @@ export async function DELETE(
     });
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error("Error deleting user:", error);
+
+    if (error instanceof PrismaClientKnownRequestError) {
+      if (error.code === "P2025") {
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
+      }
+    }
+
     return NextResponse.json(
       { error: "Failed to delete user" },
       { status: 500 }

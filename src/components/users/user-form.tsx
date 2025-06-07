@@ -12,6 +12,7 @@ interface UserFormData {
   name: string;
   email: string;
   role: string;
+  password: string;
 }
 
 interface User extends UserFormData {
@@ -43,6 +44,7 @@ export function UserForm({
     name: "",
     email: "",
     role: "EMPLOYEE",
+    password: "",
   });
 
   const [errors, setErrors] = useState<Partial<UserFormData>>({});
@@ -57,6 +59,7 @@ export function UserForm({
         name: user.name,
         email: user.email,
         role: user.role,
+        password: "",
       });
     }
   }, [user]);
@@ -74,6 +77,10 @@ export function UserForm({
       case "role":
         return !roleOptions.some((option) => option.value === value)
           ? "Invalid role"
+          : "";
+      case "password":
+        return !user && value.length < 6
+          ? "Password must be at least 6 characters"
           : "";
       default:
         return "";
@@ -188,6 +195,7 @@ export function UserForm({
           {renderField("name", "Full Name")}
           {renderField("email", "Email Address", "email")}
           {renderField("role", "Role", "select")}
+          {!user && renderField("password", "Password", "password")}
 
           <div className="flex justify-end space-x-3 mt-6 pt-4 border-t dark:border-gray-700">
             <Button

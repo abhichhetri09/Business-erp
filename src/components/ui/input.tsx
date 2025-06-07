@@ -51,7 +51,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={props.id}
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-200"
           >
             {label}
             {props.required && <span className="text-red-500 ml-1">*</span>}
@@ -71,11 +71,17 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <input
             type={inputType}
             className={cn(
-              "flex w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500  transition-colors duration-200",
+              "flex w-full rounded-lg border bg-transparent px-3 py-2 text-sm ring-offset-background transition-colors duration-200",
+              "border-gray-200 dark:border-gray-800",
+              "text-gray-900 dark:text-gray-100",
+              "placeholder:text-gray-500 dark:placeholder:text-gray-400",
+              "focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:focus:border-primary-400 dark:focus:ring-primary-400/20",
+              "disabled:cursor-not-allowed disabled:opacity-50",
+              "file:border-0 file:bg-transparent file:text-sm file:font-medium",
               Icon && "pl-10",
               (rightIcon || isPassword || isLoading) && "pr-10",
               error &&
-                "border-red-300 dark:border-red-700 focus:border-red-400 dark:focus:border-red-600",
+                "border-red-300 dark:border-red-800 focus:border-red-400 dark:focus:border-red-600 focus:ring-red-500/20 dark:focus:ring-red-600/20",
               className
             )}
             ref={ref}
@@ -91,7 +97,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                     ? () => setShowPassword(!showPassword)
                     : onRightIconClick
                 }
-                className="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:ring-offset-gray-900 rounded-full p-1 transition-colors duration-200"
+                className={cn(
+                  "rounded-full p-1 transition-colors duration-200",
+                  "text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300",
+                  "focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:ring-offset-2 dark:ring-offset-gray-900",
+                  "disabled:cursor-not-allowed disabled:opacity-50"
+                )}
                 disabled={disabled}
               >
                 {isPassword ? (

@@ -1,11 +1,13 @@
-import toast from "react-hot-toast";
+import { toast } from "react-hot-toast";
+
+type ToastType = "success" | "error" | "loading";
 
 interface ToastOptions {
-  type?: "success" | "error" | "loading";
+  type?: ToastType;
   duration?: number;
 }
 
-export function showToast(message: string, options: ToastOptions = {}) {
+export const showToast = (message: string, options: ToastOptions = {}) => {
   const { type = "success", duration = 3000 } = options;
 
   switch (type) {
@@ -18,4 +20,4 @@ export function showToast(message: string, options: ToastOptions = {}) {
     default:
       return toast(message, { duration });
   }
-} 
+};
