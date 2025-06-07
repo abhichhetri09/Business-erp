@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Sidebar from "@/components/sidebar";
+import { Sidebar } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 
