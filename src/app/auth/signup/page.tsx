@@ -72,12 +72,18 @@ export default function SignUpPage() {
         throw new Error(result.error);
       }
 
-      showToast("Account created successfully! Please sign in to continue.", {
-        type: "success",
-      });
+      showToast(
+        "Account created successfully! Please sign in with your new account.",
+        {
+          type: "success",
+          duration: 5000, // Show for 5 seconds
+        }
+      );
 
-      // Redirect to signin page after successful signup
-      router.push("/auth/signin");
+      // Wait a moment for the toast to be visible before redirecting
+      setTimeout(() => {
+        router.push("/auth/signin?email=" + encodeURIComponent(formData.email));
+      }, 1000);
     } catch (error) {
       console.error("Sign-up error:", error);
       showToast(error instanceof Error ? error.message : "Failed to sign up", {

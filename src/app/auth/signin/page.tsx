@@ -19,15 +19,20 @@ export default function SignInPage() {
     password: "",
   });
 
-  // Get callback URL from search params
+  // Get callback URL and email from search params
   const [callbackUrl, setCallbackUrl] = useState("/dashboard");
 
   useEffect(() => {
-    // Get callback URL from URL parameters
+    // Get URL parameters
     const params = new URLSearchParams(window.location.search);
     const callback = params.get("callbackUrl");
+    const email = params.get("email");
+
     if (callback) {
       setCallbackUrl(callback);
+    }
+    if (email) {
+      setFormData((prev) => ({ ...prev, email }));
     }
   }, []);
 
@@ -95,10 +100,10 @@ export default function SignInPage() {
         <div className="text-center space-y-2">
           <Icons.briefcase className="h-12 w-12 mx-auto text-primary-500" />
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            Sign in to Business ERP
+            Welcome Back
           </h1>
           <p className="text-gray-500 dark:text-gray-400">
-            Enter your credentials to access your account
+            Sign in to your account
           </p>
         </div>
 

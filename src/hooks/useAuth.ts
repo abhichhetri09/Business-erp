@@ -131,15 +131,9 @@ export function useAuth() {
         throw new Error(data.error || "Failed to sign up");
       }
 
-      // Immediately sign in after successful sign up
-      const signInResult = await signIn(email, password);
-      if (!signInResult.success) {
-        throw new Error(signInResult.error || "Failed to sign in after signup");
-      }
-
       return {
         success: true,
-        user: signInResult.user,
+        user: data.user,
       };
     } catch (error) {
       console.error("Sign-up error details:", error);
