@@ -56,11 +56,18 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { name, description, status, startDate, endDate, assignedUserIds } =
-      body;
+    const {
+      name,
+      description,
+      status,
+      startDate,
+      endDate,
+      assignedUserIds,
+      managerId,
+    } = body;
 
     // Validate required fields
-    if (!name || !status || !startDate) {
+    if (!name || !status || !startDate || !managerId) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -75,6 +82,7 @@ export async function POST(request: NextRequest) {
         status,
         startDate: new Date(startDate),
         endDate: endDate ? new Date(endDate) : null,
+        managerId,
         members: {
           connect: assignedUserIds?.map((id: string) => ({ id })) || [],
         },
