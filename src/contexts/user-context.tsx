@@ -107,15 +107,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Add function to update user state directly
-  const updateUserState = (user: User | null) => {
+  const updateUserState = useCallback((user: User | null) => {
     setState((prev) => ({
       ...prev,
       user,
       loading: false,
       initialized: true,
     }));
-  };
+  }, []);
 
   useEffect(() => {
     // Try to get user from sessionStorage first
@@ -132,11 +131,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
     checkAuth();
   }, []);
 
-  const hasPermission = (roles: UserRole[]) => {
-    if (!state.user) return false;
-    const userRoles = ROLE_HIERARCHY[state.user.role];
-    return roles.some((role) => userRoles.includes(role));
-  };
+  const hasPermission = useCallback(
+    (roles: UserRole[]) => {
+      if (!state.user) return false;
+      const userRoles = ROLE_HIERARCHY[state.user.role];
+      return roles.some((role) => userRoles.includes(role));
+    },
+    [state.user]
+  );
 
   const contextValue = useMemo(
     () => ({
@@ -147,7 +149,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
       checkAuth,
       updateUserState,
     }),
-    [state, hasPermission]
+    [
+      state.user,
+      state.loading,
+      state.initialized,
+      hasPermission,
+      checkAuth,
+      updateUserState,
+    ]
   );
 
   return (
