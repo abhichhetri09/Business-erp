@@ -6,6 +6,8 @@ import {
   useEffect,
   useState,
   ReactNode,
+  useCallback,
+  useMemo,
 } from "react";
 import { useRouter } from "next/navigation";
 import { showToast } from "@/lib/toast";
@@ -26,16 +28,14 @@ export interface User {
   role: UserRole;
 }
 
-interface UserContextType {
+export type UserContextType = {
   user: User | null;
   loading: boolean;
   initialized: boolean;
+  hasPermission: (roles: UserRole[]) => boolean;
   checkAuth: () => Promise<void>;
-  hasPermission: (requiredRoles: UserRole[]) => boolean;
-  isAdmin: () => boolean;
-  isManager: () => boolean;
-  isEmployee: () => boolean;
-}
+  updateUserState: (user: User | null) => void;
+};
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
@@ -55,7 +55,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const checkAuth = async () => {
     try {
       console.log("Checking auth status...");
-      const response = await fetch("/api/auth/me");
+      const response = await fetch("/api/auth/me", {
+        cache: "no-store",
+        headers: {
+          Pragma: "no-cache",
+          "Cache-Control": "no-cache",
+        },
+      });
       const contentType = response.headers.get("content-type");
 
       // Ensure we're getting JSON response
@@ -101,39 +107,60 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateUserState = useCallback((user: User | null) => {
+    setState((prev) => ({
+      ...prev,
+      user,
+      loading: false,
+      initialized: true,
+    }));
+  }, []);
+
   useEffect(() => {
+    // Try to get user from sessionStorage first
+    const cachedUser = sessionStorage.getItem("user");
+    if (cachedUser) {
+      try {
+        const userData = JSON.parse(cachedUser);
+        updateUserState(userData);
+      } catch (e) {
+        console.error("Failed to parse cached user data:", e);
+        sessionStorage.removeItem("user");
+      }
+    }
     checkAuth();
   }, []);
 
-  const hasPermission = (requiredRoles: UserRole[]) => {
-    if (!state.user) return false;
+  const hasPermission = useCallback(
+    (roles: UserRole[]) => {
+      if (!state.user) return false;
+      const userRoles = ROLE_HIERARCHY[state.user.role];
+      return roles.some((role) => userRoles.includes(role));
+    },
+    [state.user]
+  );
 
-    // Get the allowed roles for the current user's role
-    const allowedRoles = ROLE_HIERARCHY[state.user.role];
-
-    // Check if any of the required roles are in the allowed roles
-    return requiredRoles.some((role) => allowedRoles.includes(role));
-  };
-
-  const isAdmin = () => state.user?.role === "ADMIN";
-  const isManager = () => state.user?.role === "MANAGER";
-  const isEmployee = () => state.user?.role === "EMPLOYEE";
+  const contextValue = useMemo(
+    () => ({
+      user: state.user,
+      loading: state.loading,
+      initialized: state.initialized,
+      hasPermission,
+      checkAuth,
+      updateUserState,
+    }),
+    [
+      state.user,
+      state.loading,
+      state.initialized,
+      hasPermission,
+      checkAuth,
+      updateUserState,
+    ]
+  );
 
   return (
-    <UserContext.Provider
-      value={{
-        user: state.user,
-        loading: state.loading,
-        initialized: state.initialized,
-        checkAuth,
-        hasPermission,
-        isAdmin,
-        isManager,
-        isEmployee,
-      }}
-    >
-      {children}
-    </UserContext.Provider>
+    <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>
   );
 }
 

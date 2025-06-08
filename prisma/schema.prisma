@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -14,12 +14,33 @@ model User {
   password  String
   role      String   @default("EMPLOYEE")
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 
-  projects    Project[]    @relation("ProjectMembers")
-  timeEntries TimeEntry[]
-  expenses    Expense[]
-  managedProjects Project[] @relation("ProjectManager")
+  projects        Project[]     @relation("ProjectMembers")
+  timeEntries    TimeEntry[]
+  expenses       Expense[]
+  managedProjects Project[]    @relation("ProjectManager")
+  settings       UserSettings?
+}
+
+model UserSettings {
+  id                    String   @id @default(cuid())
+  theme                 String   @default("system") // light, dark, system
+  language              String   @default("en")
+  emailNotifications    Boolean  @default(true)
+  pushNotifications     Boolean  @default(true)
+  weeklyDigest         Boolean  @default(true)
+  defaultProjectId     String?
+  workingHours         Int      @default(8)
+  timeZone             String   @default("UTC")
+  dateFormat           String   @default("MM/dd/yyyy")
+  timeFormat           String   @default("HH:mm")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @default(now()) @updatedAt
+
+  userId               String   @unique
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  defaultProject       Project? @relation(fields: [defaultProjectId], references: [id], onDelete: SetNull)
 }
 
 model Project {
@@ -30,13 +51,14 @@ model Project {
   startDate   DateTime
   endDate     DateTime?
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @default(now()) @updatedAt
 
   managerId   String
   manager     User     @relation("ProjectManager", fields: [managerId], references: [id])
   members     User[]   @relation("ProjectMembers")
   timeEntries TimeEntry[]
   expenses    Expense[]
+  defaultFor  UserSettings[]
 }
 
 model TimeEntry {
@@ -45,7 +67,7 @@ model TimeEntry {
   hours       Float
   description String?
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @default(now()) @updatedAt
 
   userId      String
   user        User     @relation(fields: [userId], references: [id])
@@ -60,7 +82,7 @@ model Expense {
   date        DateTime
   status      String   @default("PENDING")
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @default(now()) @updatedAt
 
   userId      String
   user        User     @relation(fields: [userId], references: [id])

@@ -37,6 +37,9 @@ import {
   MagnifyingGlassIcon,
   ExclamationCircleIcon,
   CheckCircleIcon,
+  PlayIcon,
+  StopIcon,
+  LockOpenIcon,
 } from "@heroicons/react/24/outline";
 
 // Main Navigation Icons
@@ -94,6 +97,9 @@ export const Icons = {
   briefcase: BriefcaseIcon,
   user: UserCircleIcon,
   loading: ArrowPathIcon,
+  play: PlayIcon,
+  stop: StopIcon,
+  lock: LockOpenIcon,
 
   // Form Elements
   eye: EyeIcon,

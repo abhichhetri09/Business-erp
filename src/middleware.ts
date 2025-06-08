@@ -13,6 +13,12 @@ const publicPaths = [
 // API routes that should never redirect
 const apiRoutes = ["/api/"];
 
+function redirectToSignIn(request: NextRequest) {
+  const signInUrl = new URL("/auth/signin", request.url);
+  signInUrl.searchParams.set("callbackUrl", request.nextUrl.pathname);
+  return NextResponse.redirect(signInUrl);
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -46,10 +52,16 @@ export async function middleware(request: NextRequest) {
         requestHeaders.set("X-User-Id", payload.sub);
         requestHeaders.set("X-User-Role", payload.role as string);
 
+        // Clone the request with new headers
+        const newRequest = new Request(request.url, {
+          headers: requestHeaders,
+          method: request.method,
+          body: request.body,
+          cache: "no-store",
+        });
+
         return NextResponse.next({
-          request: {
-            headers: requestHeaders,
-          },
+          request: newRequest,
         });
       } catch (error) {
         console.error("API middleware error:", error);
@@ -62,14 +74,21 @@ export async function middleware(request: NextRequest) {
   }
 
   // Handle non-API routes with redirects
-  if (isPublicPath && token && !isApiRoute) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+  if (isPublicPath && token) {
+    try {
+      // Verify token before redirecting to dashboard
+      await verifyJWT(token.value);
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    } catch (error) {
+      // If token is invalid, remove it and continue to public path
+      const response = NextResponse.next();
+      response.cookies.delete("token");
+      return response;
+    }
   }
 
-  if (!isPublicPath && !token && !isApiRoute) {
-    const signInUrl = new URL("/auth/signin", request.url);
-    signInUrl.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(signInUrl);
+  if (!isPublicPath && !token) {
+    return redirectToSignIn(request);
   }
 
   if (!isPublicPath && token) {
@@ -77,31 +96,39 @@ export async function middleware(request: NextRequest) {
       const { payload } = await verifyJWT(token.value);
 
       if (!payload.sub) {
-        return redirectToSignIn(request);
+        const response = NextResponse.redirect(
+          new URL("/auth/signin", request.url)
+        );
+        response.cookies.delete("token");
+        return response;
       }
 
       const requestHeaders = new Headers(request.headers);
       requestHeaders.set("X-User-Id", payload.sub);
       requestHeaders.set("X-User-Role", payload.role as string);
+      requestHeaders.set("Cache-Control", "no-store, must-revalidate");
+      requestHeaders.set("Pragma", "no-cache");
+
+      // Clone the request with new headers
+      const newRequest = new Request(request.url, {
+        headers: requestHeaders,
+        method: request.method,
+        body: request.body,
+        cache: "no-store",
+      });
 
       return NextResponse.next({
-        request: {
-          headers: requestHeaders,
-        },
+        request: newRequest,
       });
     } catch (error) {
       console.error("Middleware error:", error);
-      return redirectToSignIn(request);
+      const response = redirectToSignIn(request);
+      response.cookies.delete("token");
+      return response;
     }
   }
 
   return NextResponse.next();
-}
-
-function redirectToSignIn(request: NextRequest) {
-  const signInUrl = new URL("/auth/signin", request.url);
-  signInUrl.searchParams.set("callbackUrl", request.nextUrl.pathname);
-  return NextResponse.redirect(signInUrl);
 }
 
 // Configure the paths that trigger the middleware

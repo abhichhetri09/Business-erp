@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Icons } from "@/components/icons/index";
 import { showToast } from "@/lib/toast";
 import { useAuth } from "@/hooks/useAuth";
+import { ThemeToggle } from "@/components/layout";
 
 export default function SignInPage() {
   const { signIn, user, loading } = useAuth();
@@ -39,8 +40,7 @@ export default function SignInPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (!loading && user) {
-      console.log("Already authenticated, redirecting to callback URL");
-      router.push(callbackUrl);
+      router.replace(callbackUrl);
     }
   }, [user, loading, router, callbackUrl]);
 
@@ -49,30 +49,23 @@ export default function SignInPage() {
     setIsLoading(true);
 
     try {
-      console.log("Submitting sign-in form...");
       const result = await signIn(formData.email, formData.password);
-      console.log("Sign-in result:", result);
 
       if (!result.success) {
         throw new Error(result.error);
       }
 
-      showToast("Signed in successfully! Redirecting...", {
+      showToast("Signed in successfully!", {
         type: "success",
       });
 
-      // Force navigation after a short delay
-      setTimeout(() => {
-        console.log("Forcing navigation to:", callbackUrl);
-        router.push(callbackUrl);
-        router.refresh();
-      }, 100);
+      // Force a hard navigation to ensure proper page load
+      window.location.href = callbackUrl;
     } catch (error) {
       console.error("Sign-in form error:", error);
       showToast(error instanceof Error ? error.message : "Failed to sign in", {
         type: "error",
       });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -96,6 +89,9 @@ export default function SignInPage() {
 
   return (
     <main className="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-900">
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
       <Card className="w-full max-w-md p-6 space-y-6 bg-white dark:bg-gray-800">
         <div className="text-center space-y-2">
           <Icons.briefcase className="h-12 w-12 mx-auto text-primary-500" />

@@ -60,6 +60,7 @@ export async function POST(request: Request) {
       // Extend cookie expiry and make it more resilient
       maxAge: 60 * 60 * 24 * 7, // 7 days
       domain: process.env.NODE_ENV === "development" ? "localhost" : undefined,
+      // Extend cookie expiry and make it more resilient
     });
 
     // Return minimal user data
