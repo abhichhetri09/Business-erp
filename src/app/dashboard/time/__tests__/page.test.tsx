@@ -229,4 +229,78 @@ describe("TimeTrackingPage", () => {
       screen.getByText("Please enter both task and project details")
     ).toBeInTheDocument();
   });
+
+  it("stops time tracking when clicking stop button", async () => {
+    const fetchPromises = [
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(mockProjects),
+      }),
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(mockTimeEntries),
+      }),
+    ];
+
+    (global.fetch as jest.Mock)
+      .mockImplementationOnce(() => fetchPromises[0])
+      .mockImplementationOnce(() => fetchPromises[1]);
+
+    await act(async () => {
+      render(<TimeTrackingPage />);
+      await Promise.all(fetchPromises);
+    });
+
+    // Wait for data to load
+    await waitFor(() => {
+      expect(screen.getByText("Start Tracking")).toBeInTheDocument();
+    });
+
+    // Fill in the form
+    await act(async () => {
+      fireEvent.change(
+        screen.getByPlaceholderText("What are you working on?"),
+        {
+          target: { value: "New task" },
+        }
+      );
+      fireEvent.change(screen.getByRole("combobox"), {
+        target: { value: "1" },
+      });
+    });
+
+    // Start tracking
+    await act(async () => {
+      fireEvent.click(screen.getByText("Start Tracking"));
+    });
+
+    // Verify tracking started
+    expect(screen.getByText("Stop Tracking")).toBeInTheDocument();
+
+    // Mock the stop tracking API call
+    (global.fetch as jest.Mock).mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ success: true }),
+      })
+    );
+
+    // Stop tracking
+    await act(async () => {
+      fireEvent.click(screen.getByText("Stop Tracking"));
+    });
+
+    // Verify tracking stopped and UI updated
+    await waitFor(() => {
+      expect(screen.getByText("Start Tracking")).toBeInTheDocument();
+    });
+
+    // Verify API call was made
+    expect(global.fetch).toHaveBeenCalledWith(
+      "/api/time/stop",
+      expect.objectContaining({
+        method: "POST",
+      })
+    );
+  });
 });
