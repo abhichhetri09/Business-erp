@@ -132,12 +132,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
     checkAuth();
   }, []);
 
-  const hasPermission = useCallback(
-    (roles: UserRole[]) => {
-      return state.user ? roles.includes(state.user.role) : false;
-    },
-    [state.user]
-  );
+  const hasPermission = (roles: UserRole[]) => {
+    if (!state.user) return false;
+    const userRoles = ROLE_HIERARCHY[state.user.role];
+    return roles.some((role) => userRoles.includes(role));
+  };
 
   const contextValue = useMemo(
     () => ({
