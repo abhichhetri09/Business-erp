@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
         endDate: true,
         createdAt: true,
         updatedAt: true,
-        assignedUsers: {
+        members: {
           select: {
             id: true,
             name: true,
