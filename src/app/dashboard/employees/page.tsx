@@ -208,7 +208,7 @@ export default function EmployeesPage() {
             placeholder="Search employees..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="max-w-sm"
+            className="w-full"
           />
         </div>
       </Card>

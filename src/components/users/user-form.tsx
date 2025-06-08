@@ -174,23 +174,7 @@ export function UserForm({
 
   return (
     <Card className="relative overflow-hidden animate-scale-in">
-      <div className="absolute right-2 top-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onCancel}
-          className="text-gray-400 hover:text-gray-500 transition-colors duration-200 transform hover:scale-105"
-        >
-          <Icons.close className="h-5 w-5" />
-        </Button>
-      </div>
-      <div className="p-6">
-        <div className="flex items-center gap-3 mb-6 animate-fade-in">
-          <Icons.userPlus className="h-6 w-6 text-primary-500" />
-          <h2 className="text-xl font-semibold">
-            {user ? "Edit Employee" : "Add New Employee"}
-          </h2>
-        </div>
+      <div className="p-2">
         <form onSubmit={handleSubmit} className="space-y-4">
           {renderField("name", "Full Name")}
           {renderField("email", "Email Address", "email")}

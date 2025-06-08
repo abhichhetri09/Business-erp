@@ -14,7 +14,7 @@ model User {
   password  String
   role      String   @default("EMPLOYEE")
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 
   projects        Project[]     @relation("ProjectMembers")
   timeEntries    TimeEntry[]
@@ -36,7 +36,7 @@ model UserSettings {
   dateFormat           String   @default("MM/dd/yyyy")
   timeFormat           String   @default("HH:mm")
   createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  updatedAt            DateTime @default(now()) @updatedAt
 
   userId               String   @unique
   user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -51,7 +51,7 @@ model Project {
   startDate   DateTime
   endDate     DateTime?
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @default(now()) @updatedAt
 
   managerId   String
   manager     User     @relation("ProjectManager", fields: [managerId], references: [id])
@@ -67,7 +67,7 @@ model TimeEntry {
   hours       Float
   description String?
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @default(now()) @updatedAt
 
   userId      String
   user        User     @relation(fields: [userId], references: [id])
@@ -82,7 +82,7 @@ model Expense {
   date        DateTime
   status      String   @default("PENDING")
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @default(now()) @updatedAt
 
   userId      String
   user        User     @relation(fields: [userId], references: [id])

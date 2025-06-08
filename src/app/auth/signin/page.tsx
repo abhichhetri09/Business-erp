@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Icons } from "@/components/icons/index";
 import { showToast } from "@/lib/toast";
 import { useAuth } from "@/hooks/useAuth";
+import { ThemeToggle } from "@/components/layout";
 
 export default function SignInPage() {
   const { signIn, user, loading } = useAuth();
@@ -88,6 +89,9 @@ export default function SignInPage() {
 
   return (
     <main className="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-900">
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
       <Card className="w-full max-w-md p-6 space-y-6 bg-white dark:bg-gray-800">
         <div className="text-center space-y-2">
           <Icons.briefcase className="h-12 w-12 mx-auto text-primary-500" />

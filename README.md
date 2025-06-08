@@ -73,7 +73,7 @@ A modern, full-stack Enterprise Resource Planning (ERP) system built with Next.j
 
   - Node.js
   - Prisma ORM
-  - SQLite Database
+  - Neon PostgreSQL Database
   - JWT Authentication
 
 - **Development**:
@@ -88,6 +88,7 @@ A modern, full-stack Enterprise Resource Planning (ERP) system built with Next.j
 
 - Node.js 18+ installed
 - npm or yarn package manager
+- Neon PostgreSQL account (free tier available)
 
 ### Installation
 
@@ -110,6 +111,12 @@ A modern, full-stack Enterprise Resource Planning (ERP) system built with Next.j
 
    ```bash
    cp .env.example .env
+   ```
+
+   Update `.env` with your Neon PostgreSQL connection string:
+
+   ```
+   DATABASE_URL="postgresql://[user]:[password]@[endpoint]/[dbname]?sslmode=require"
    ```
 
 4. Initialize the database:
@@ -239,4 +246,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Next.js team for the amazing framework
 - Prisma team for the excellent ORM
+- Neon PostgreSQL for the free cloud database
 - All contributors and users of this project
