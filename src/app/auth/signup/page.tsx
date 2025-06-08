@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Icons } from "@/components/icons";
 import { showToast } from "@/lib/toast";
 import { useAuth } from "@/hooks/useAuth";
+import { ThemeToggle } from "@/components/layout";
 
 export default function SignUpPage() {
   const { signUp } = useAuth();
@@ -96,6 +97,9 @@ export default function SignUpPage() {
 
   return (
     <main className="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-900">
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
       <Card className="w-full max-w-md p-6 space-y-6 bg-white dark:bg-gray-800">
         <div className="text-center space-y-2">
           <Icons.briefcase className="h-12 w-12 mx-auto text-primary-500" />
@@ -122,7 +126,7 @@ export default function SignUpPage() {
             type="email"
             label="Email"
             placeholder="Enter your email"
-            icon="mail"
+            icon="email"
             required
             value={formData.email}
             onChange={(e) =>
@@ -134,7 +138,7 @@ export default function SignUpPage() {
             type="password"
             label="Password"
             placeholder="Create a password"
-            icon="lock"
+            icon="eyeOff"
             required
             value={formData.password}
             onChange={(e) =>
@@ -146,7 +150,7 @@ export default function SignUpPage() {
             type="password"
             label="Confirm Password"
             placeholder="Confirm your password"
-            icon="lock"
+            icon="eyeOff"
             required
             value={formData.confirmPassword}
             onChange={(e) =>
