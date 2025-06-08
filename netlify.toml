@@ -1,11 +1,11 @@
 [build]
   command = "npx prisma generate && npm run build"
   publish = ".next"
-  environment = { DATABASE_URL = "", JWT_SECRET = "", JWT_EXPIRES_IN = "", NEXT_PUBLIC_SITE_URL = "", NODE_VERSION = "20.11.1" }
-
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
 
 [build.environment]
+  NODE_VERSION = "20.11.1"
   PRISMA_CLI_QUERY_ENGINE_TYPE = "binary"
-  PRISMA_CLIENT_ENGINE_TYPE = "binary" 
+  PRISMA_CLIENT_ENGINE_TYPE = "binary"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs" 
