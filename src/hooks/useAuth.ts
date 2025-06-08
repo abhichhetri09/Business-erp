@@ -187,12 +187,15 @@ export function useAuth() {
     checkAuth();
   }, []);
 
+  const { user, loading, initialized } = state;
+
   return {
-    user: state.user,
-    loading: state.loading,
-    initialized: state.initialized,
+    user,
+    loading,
+    initialized,
     signIn,
-    signUp,
     signOut,
+    signUp,
+    checkAuth,
   };
 }
