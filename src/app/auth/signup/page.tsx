@@ -138,7 +138,7 @@ export default function SignUpPage() {
             type="password"
             label="Password"
             placeholder="Create a password"
-            icon="eyeOff"
+            icon="lock"
             required
             value={formData.password}
             onChange={(e) =>
@@ -150,7 +150,7 @@ export default function SignUpPage() {
             type="password"
             label="Confirm Password"
             placeholder="Confirm your password"
-            icon="eyeOff"
+            icon="lock"
             required
             value={formData.confirmPassword}
             onChange={(e) =>
