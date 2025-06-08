@@ -75,12 +75,12 @@ export async function POST(request: NextRequest) {
         status,
         startDate: new Date(startDate),
         endDate: endDate ? new Date(endDate) : null,
-        assignedUsers: {
+        members: {
           connect: assignedUserIds?.map((id: string) => ({ id })) || [],
         },
       },
       include: {
-        assignedUsers: {
+        members: {
           select: {
             id: true,
             name: true,
