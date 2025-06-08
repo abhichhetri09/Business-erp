@@ -71,7 +71,7 @@ export default function ProjectsPage() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Project Management</h1>
-        {(isAdmin() || isManager()) && (
+        {(isAdmin || isManager) && (
           <Button>
             <Icons.projects className="mr-2 h-4 w-4" />
             Add Project
@@ -101,7 +101,7 @@ export default function ProjectsPage() {
                   <th className="text-left p-2">Start Date</th>
                   <th className="text-left p-2">End Date</th>
                   <th className="text-left p-2">Assigned Users</th>
-                  {(isAdmin() || isManager()) && (
+                  {(isAdmin || isManager) && (
                     <th className="text-left p-2">Actions</th>
                   )}
                 </tr>
@@ -144,12 +144,12 @@ export default function ProjectsPage() {
                         ))}
                       </div>
                     </td>
-                    {(isAdmin() || isManager()) && (
+                    {(isAdmin || isManager) && (
                       <td className="p-2">
                         <Button variant="ghost" size="sm">
                           <Icons.clipboard className="h-4 w-4" />
                         </Button>
-                        {isAdmin() && (
+                        {isAdmin && (
                           <Button
                             variant="ghost"
                             size="sm"

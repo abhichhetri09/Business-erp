@@ -28,6 +28,7 @@ export async function POST(request: Request) {
         email: body.email,
         name: body.name,
         role: body.role || "EMPLOYEE",
+        password: body.password,
       },
     });
     return NextResponse.json(user);

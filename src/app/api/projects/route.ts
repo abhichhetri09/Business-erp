@@ -142,12 +142,12 @@ export async function PUT(request: NextRequest) {
         status,
         startDate: startDate ? new Date(startDate) : undefined,
         endDate: endDate ? new Date(endDate) : null,
-        assignedUsers: {
+        members: {
           set: assignedUserIds?.map((id: string) => ({ id })) || [],
         },
       },
       include: {
-        assignedUsers: {
+        members: {
           select: {
             id: true,
             name: true,

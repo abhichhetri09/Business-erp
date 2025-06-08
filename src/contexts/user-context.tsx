@@ -35,6 +35,8 @@ export type UserContextType = {
   hasPermission: (roles: UserRole[]) => boolean;
   checkAuth: () => Promise<void>;
   updateUserState: (user: User | null) => void;
+  isAdmin: boolean;
+  isManager: boolean;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -140,6 +142,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
     [state.user]
   );
 
+  const isAdmin = state.user?.role === "ADMIN";
+  const isManager = state.user?.role === "MANAGER";
+
   const contextValue = useMemo(
     () => ({
       user: state.user,
@@ -148,6 +153,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
       hasPermission,
       checkAuth,
       updateUserState,
+      isAdmin,
+      isManager,
     }),
     [
       state.user,
@@ -156,6 +163,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
       hasPermission,
       checkAuth,
       updateUserState,
+      isAdmin,
+      isManager,
     ]
   );
 
